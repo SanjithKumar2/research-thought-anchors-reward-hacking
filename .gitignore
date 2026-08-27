@@ -1,0 +1,7 @@
+venvs/
+logs/
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+mats_project_handoff.zip
