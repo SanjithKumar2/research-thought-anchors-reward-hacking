@@ -1,12 +1,12 @@
 # config.py
 
 MODEL_ID    = "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B"
-TEMPERATURE = 0.9
+TEMPERATURE = 0.6
 TOP_P       = 0.95
 MAX_TOKENS  = 16384
 N_ROLLOUTS  = 60      # per task, for full run
 N_RESAMPLE  = 20      # continuations per resampled sentence in Phase 3
-RESULTS_DIR = "results_bespoke_temp09"  # new folder: incentivized-prompt experiment (see tasks.py changes)
+RESULTS_DIR = "results_bespoke"  # new folder: incentivized-prompt experiment (see tasks.py changes)
 
 # Inference servers
 # Phase 1 (rollouts): vLLM — continuous batching, fast parallel generation
