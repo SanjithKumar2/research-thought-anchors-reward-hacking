@@ -606,3 +606,146 @@ push to GitHub under their own identity rather than as Claude. Set up:
 - `config.py`: `TEMPERATURE=0.6`, `MAX_TOKENS=16384`, `RESULTS_DIR=
   "results_hard"` (⚠️ update this before running anything new — see §9.5).
 - `tasks.py`: currently the v3 "harder" bespoke set (§9.5.3).
+
+---
+
+## 10. Session 4 (2026-08-29) -- new sandbox, model-swap started, blocked by sandbox lifespan
+
+### 10.1 What happened
+Reconnected to continue "try a weaker/different model" (the agreed next step from
+Session 3). The previous molab sandbox was gone (HTTP 410 "sandbox terminated") --
+this is expected, sandboxes are ephemeral and nothing survives on them except what's
+in this git repo (venvs/, logs/ are gitignored and rebuilt from scratch every time).
+
+**Model chosen:** `deepseek-ai/DeepSeek-R1-Distill-Qwen-7B` (the *original* R1 distill,
+not R1-0528). Rationale discussed with user: isolate "R1-0528's specific RLVR recipe"
+as the variable while holding model size (~7-8B) and reasoning-CoT format constant --
+cleanest single-variable comparison to Session 3's null result. `config.py` and
+`start_vllm.sh` were updated for this model and confirmed pushed to GitHub via
+git_sync before the box died (see 10.3) -- **the next session should find `tasks.py`
+still at v3 hard-multistep and `config.py` already pointing at
+DeepSeek-R1-Distill-Qwen-7B with `RESULTS_DIR = "results_r1distill_qwen7b"`.**
+
+### 10.2 Blocking issue: sandboxes are dying in ~5-15 minutes, not on user action
+This session hit **5 consecutive molab sandboxes dying (HTTP 410) within minutes of
+creation**, including one that died literally seconds after the vLLM server for the
+new model finished booting and confirmed serving requests (curl to `/v1/models`
+succeeded, then the very next call to the box failed with sandbox-terminated). No
+single sandbox survived long enough to run even a 10-rollout sanity check.
+
+Evidence this is NOT normal user-side disconnects:
+- First 1-2 deaths coincided with user actions (laptop crash, unclear cause) --
+  plausibly unrelated.
+- The last 2-3 deaths happened with no corresponding user action, including one
+  immediately after a fully healthy, fully-booted, actively-serving vLLM server.
+- Lifespans observed: roughly 5 min, ~4 min, ~5 min, ~13-14 min (longest, this one
+  got all the way through model download + weight load + CUDA graph capture + server
+  startup, and even served two `/v1/models` requests, before dying).
+- The user was surprised by this too ("i dont know why its happening, everytime you
+  run into this, its immediately up") and could not identify a molab dashboard
+  setting for it in the moment -- **this needs to be checked before the next session**
+  (look for a session-duration cap, GPU idle timeout, or free-tier/plan limit on
+  molab.run's dashboard).
+- Important nuance: from the user's side each reconnect *looks* like the same
+  notebook (no explicit "create new sandbox" action), but the underlying compute is
+  confirmed fresh every time -- `uptime -s` resets, `/marimo/mats` gets re-cloned
+  from GitHub on every boot (proving it's not persistent local disk), and venvs are
+  always the empty skeleton dirs molab's template ships, never our built ones. So
+  whatever's cycling the box is happening on molab's side, transparently to the user.
+
+### 10.3 What was proven to work this session (infra is solid, just needs a longer-lived box)
+Despite never completing a rollout, the rebuild-from-git workflow was validated
+end-to-end, repeatedly, and is now fast (~2-3 min wall clock for a fresh box to reach
+a fully serving vLLM endpoint):
+1. `git clone` (done automatically by the box template on boot).
+2. Set git remote to `https://SanjithKumar2:<PAT>@github.com/...` + local
+   `user.name`/`user.email` (PAT lives in `.env` on the user's local Windows machine,
+   never committed).
+3. `rm -rf venvs/mats venvs/mats-vllm` -- **required**: molab's box template
+   pre-creates *empty skeleton* `venvs/mats` and `venvs/mats-vllm` directories (with
+   `bin/`/`lib/` subdirs but nothing in them) on every fresh boot. `uv venv` refuses
+   to create a venv where a directory already exists, and refuses `--clear` too
+   ("uv will not clear a directory that is not a virtual environment") -- you MUST
+   `rm -rf` those two paths first, every single time, before `uv venv`.
+4. `uv venv venvs/mats --python 3.13` / `uv venv venvs/mats-vllm --python 3.13`.
+5. `uv pip install --python venvs/mats/bin/python openai tqdm transformers`.
+6. `uv pip install --python venvs/mats-vllm/bin/python vllm` (installs cleanly,
+   ~40s on this box's network, no dependency conflicts, vllm==0.28.0).
+7. Launch `git_sync.sh` and `start_vllm.sh` both via
+   `setsid nohup bash <script> > <log> 2>&1 < /dev/null & disown` -- **critical**:
+   plain `nohup ... &` is NOT enough to survive the parent `subprocess.run()` call
+   exiting inside marimo's code-mode scratchpad -- it gets killed anyway (confirmed:
+   `git_sync.sh` ran its very first loop iteration successfully, then died, when
+   launched with only `nohup`). `setsid` makes the process its own session leader
+   (shows as `Ss` state in `ps aux`), which does survive.
+8. Same env fixes from Session 3 still apply and were re-confirmed on this model too:
+   `VLLM_USE_FLASHINFER_SAMPLER=0` (flashinfer JIT sampler needs `nvcc`, box only has
+   the driver) and a harmless `deep_gemm` import warning (also needs `nvcc`, silently
+   falls back). `DeepSeek-R1-Distill-Qwen-7B` resolves to `Qwen2ForCausalLM`
+   architecture (not `Qwen3ForCausalLM` like the R1-0528 model) and booted with zero
+   new errors -- no tokenizer_class bug, no other surprises. Weight load ~8s, full
+   startup (download+load+compile+graph-capture+serve) ~2.5-3 min end to end once
+   `uv pip install` is done.
+9. **Whole-pipeline-in-one-background-script pattern**: because of the short and
+   unpredictable box lifespan, the most effective approach found this session was
+   writing ONE `.sh` script that does git config -> venv rebuild -> deps install ->
+   launch git_sync -> launch vLLM -> poll `/v1/models` in a loop until ready -> run
+   the sanity rollout -> `git add/commit/push`, then launching that single script
+   with the `setsid nohup ... & disown` pattern and just polling its log file. This
+   maximizes useful work done per box lifetime and means results get committed
+   immediately if the script reaches that point before the box dies. **Recommended
+   starting point for next session** -- see `logs/allinone.sh` pattern (this file
+   itself is gitignored/not pushed, but reconstructable from this description; it was
+   never fully validated end-to-end since the box died right before the sanity
+   rollout line executed, but every step before that was confirmed working).
+10. Note on `execute-code.sh` reliability on this box: foreground calls doing several
+    things in sequence intermittently hit "the server ended the stream without a
+    result" (an SSE idle/timeout issue, not a real failure -- the underlying remote
+    command usually did complete). Splitting into more, smaller calls and always
+    checking actual remote state (`ps aux`, log tail, `curl`) rather than trusting
+    the stream's own success/failure signal was the reliable pattern, consistent with
+    Session 3's notes.
+11. `ps aux`'s COMMAND column truncation caused another false "process not found"
+    moment this session (grep for `EngineCore`/`APIServer` intermittently missed
+    live, healthy processes) -- `ps auxww` (wide, no truncation) or a broader
+    substring grep resolved it every time. This is now the third session this has
+    tripped up -- worth just defaulting to `ps auxww` on this box going forward.
+
+### 10.4 State at end of session (nothing running -- last sandbox is dead)
+- No live sandbox. Next session starts from a brand new one.
+- GitHub repo is up to date as of commit `adf9a4d` (auto-sync at 2026-08-29T14:57:11Z)
+  plus whatever `git_sync` caught before the final box died -- **verify with
+  `git log -3` at the start of next session**, don't assume.
+- `config.py`: `MODEL_ID = "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B"`,
+  `RESULTS_DIR = "results_r1distill_qwen7b"`, everything else unchanged from
+  Session 3 (`TEMPERATURE=0.6`, `TOP_P=0.95`, `MAX_TOKENS=16384`, `N_ROLLOUTS=60`).
+- `start_vllm.sh`: updated to launch `DeepSeek-R1-Distill-Qwen-7B` (simplified --
+  dropped the SGLang-conflict guard clauses that were in the Session 3 version; may
+  want to re-add those if SGLang work starts).
+- `tasks.py`: still v3 hard-multistep (unchanged from Session 3) -- this is the task
+  set that will be used for the new model's first test, per the "cleanest
+  single-variable comparison" rationale above. Could reconsider starting with the
+  original canonical set instead, since a weaker model might need simpler tasks to
+  produce coherent completions at all -- **not yet decided, worth a quick discussion
+  at the start of next session**.
+- No rollout data exists yet for `DeepSeek-R1-Distill-Qwen-7B` --
+  `results_r1distill_qwen7b/` does not exist in the repo yet.
+
+### 10.5 Recommended next steps
+1. **Before doing anything else**, check molab.run's dashboard/account/billing page
+   for a session-duration or idle-timeout setting. If one exists and can be raised,
+   that alone would unblock everything else this session was blocked on. If the user
+   confirms no such setting exists, treat the ~5-15 min lifespan as a hard constraint
+   and design around it (e.g. very small rollout batches, or accept that a full
+   60-rollout x N-task run has to happen across multiple sandbox lifetimes with
+   results accumulating in git between them).
+2. Get a fresh sandbox, reuse the `venvs/` rebuild steps in 10.3 (now fast and
+   reliable), and get straight to the sanity rollout this time --
+   `venvs/mats/bin/python rollout.py --sanity-task task_01_stack_machine --concurrency 8`
+   -- to see whether `DeepSeek-R1-Distill-Qwen-7B` produces any hack behavior at all
+   on the v3 hard task set, before committing to a full run.
+3. If the sanity pilot shows the same near-zero hack rate as Session 3's model, the
+   model-swap hypothesis (heavier RLVR = stronger hack-aversion) would itself be
+   getting disconfirmed, and worth surfacing to the user rather than continuing to
+   iterate blindly -- discuss whether to try the non-reasoning/instruct-model
+   direction instead (the other option discussed and not chosen this session).
