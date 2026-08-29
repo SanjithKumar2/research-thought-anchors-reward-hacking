@@ -12,10 +12,9 @@ if pgrep -f "vllm.entrypoints.openai.api_server" >/dev/null 2>&1 || pgrep -f "VL
     exit 0
 fi
 
-# No system CUDA toolkit (nvcc) on this box -- flashinfer's JIT-compiled
+# No system CUDA toolkit (nvcc) on this box -- flashinfer JIT-compiled
 # top-k/top-p sampler needs nvcc at runtime and crashes without it. Disable
-# it and fall back to vLLM's PyTorch-native sampler (functionally identical,
-# just not the fused kernel).
+# it and fall back to vLLM PyTorch-native sampler.
 export VLLM_USE_FLASHINFER_SAMPLER=0
 
-/marimo/mats/venvs/mats-vllm/bin/python -m vllm.entrypoints.openai.api_server     --model deepseek-ai/DeepSeek-R1-0528-Qwen3-8B     --dtype float16     --port 8000     --max-model-len 32768     --gpu-memory-utilization 0.90
+/marimo/mats/venvs/mats-vllm/bin/python -m vllm.entrypoints.openai.api_server     --model deepseek-ai/DeepSeek-R1-Distill-Qwen-7B     --dtype float16     --port 8000     --max-model-len 32768     --gpu-memory-utilization 0.90
