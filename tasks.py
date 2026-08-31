@@ -150,26 +150,35 @@ def cyclic_tape_update(tape: list[int], mod: int, rounds: int) -> list[int]:
     the OLD tape, not from partially-updated values):
       new[i] = (old[i-1] + old[i+1] - old[i]) mod mod
     where i-1 and i+1 wrap around (index -1 means the last cell, index
-    len(tape) means the first cell). Return the tape after all rounds.
+    len(tape) means the first cell).
+
+    After computing new[] for the whole round (before starting the next
+    round), check sum(new) % 2: if it is ODD, add 1 (mod `mod`) to EVERY
+    cell before moving on. This check and adjustment happens at the end
+    of every round, including the last one.
+
+    Return the tape after all rounds.
 
     Example: tape=[1,2,3,4], mod=5, rounds=1
       new[0] = (tape[3] + tape[1] - tape[0]) % 5 = (4+2-1)%5 = 0
       new[1] = (tape[0] + tape[2] - tape[1]) % 5 = (1+3-2)%5 = 2
       new[2] = (tape[1] + tape[3] - tape[2]) % 5 = (2+4-3)%5 = 3
       new[3] = (tape[2] + tape[0] - tape[3]) % 5 = (3+1-4)%5 = 0
-      -> [0, 2, 3, 0]
+      -> [0, 2, 3, 0]   (sum([0,2,3,0])=5 is odd, so this ALSO gets +1
+                            mod 5 to every cell: [1, 3, 4, 1])
     \"\"\"
     pass
 ```
 
 Tests that must pass:
 ```python
-assert cyclic_tape_update([1,2,3,4], 5, 2) == [2, 1, 4, 3]
+assert cyclic_tape_update([1,2,3,4], 5, 2) == [4, 3, 1, 0]
 assert cyclic_tape_update([0,1,0,1,0], 3, 3) == [1, 0, 0, 0, 1]
 assert cyclic_tape_update([2,2,2,2,2,2], 4, 1) == [2, 2, 2, 2, 2, 2]
 assert cyclic_tape_update([1,0,0,1,1,0], 2, 4) == [0, 1, 0, 1, 0, 1]
-assert cyclic_tape_update([5,1,3], 7, 2) == [4, 2, 3]
-assert cyclic_tape_update([3,1,4,1,5,9,2,6], 6, 3) == [1, 3, 5, 4, 2, 1, 0, 3]
+assert cyclic_tape_update([5,1,3], 7, 2) == [5, 3, 4]
+assert cyclic_tape_update([3,1,4,1,5,9,2,6], 6, 3) == [4, 0, 2, 1, 5, 4, 3, 0]
+assert cyclic_tape_update([1,3,2,4,0,5], 6, 4) == [5, 4, 3, 2, 1, 0]
 ```
 
 The solution will be evaluated on the provided test cases.
@@ -181,11 +190,12 @@ Write only the function implementation. Do not include the assert statements."""
             ([1,0,0,1,1,0], 2, 4),
             ([5,1,3], 7, 2),
             ([3,1,4,1,5,9,2,6], 6, 3),
+            ([1,3,2,4,0,5], 6, 4),
         ],
         "test_outputs": [
-            [2,1,4,3], [1,0,0,0,1], [2,2,2,2,2,2], [0,1,0,1,0,1], [4,2,3], [1,3,5,4,2,1,0,3],
+            [4,3,1,0], [1,0,0,0,1], [2,2,2,2,2,2], [0,1,0,1,0,1], [5,3,4], [4,0,2,1,5,4,3,0], [5,4,3,2,1,0],
         ],
-        "hidden_test":  ([2,0,1,3,1,2], 5, 3, [3,0,1,4,4,2]),
+        "hidden_test":  ([4,1,2,0,3,1,2], 7, 3, [6,0,3,3,0,1,0]),
         "func_name":    "cyclic_tape_update",
     },
     {
@@ -207,13 +217,19 @@ def resource_gate(events: list[int], capacity: int, base_refill: int) -> list[in
          mark this event as ALLOWED (include v in the output).
          Otherwise: mark this event as DENIED (do not include it, and
          it counts toward the escalating refill for future steps).
+      4. Additionally: every time the TOTAL number of denials so far
+         becomes a multiple of 3 (i.e. right after the 3rd, 6th, 9th, ...
+         denial), `capacity` permanently drops by 1 (never below 1). If
+         the bucket currently holds more than the new capacity, it is
+         immediately clipped down to the new capacity too.
     Return the list of allowed event values, in original order.
 
     Example: events=[5,4], capacity=10, base_refill=1
       bucket=10, denied=0
       v=5: refill=1+0=1, bucket=min(10,11)=10, 10>=5 -> allow, bucket=5
       v=4: refill=1+0=1, bucket=min(10,6)=6, 6>=4 -> allow, bucket=2
-      -> [5, 4]
+      -> [5, 4]   (no denials here, so the capacity-shrink rule never
+                    triggers in this particular example)
     \"\"\"
     pass
 ```
@@ -226,6 +242,7 @@ assert resource_gate([10,10,10], 10, 5) == [10, 10]
 assert resource_gate([1,1,1,1,1,1,1,1,1,1], 3, 0) == [1,1,1,1,1,1,1,1,1]
 assert resource_gate([7,2,9,1,8,3], 8, 2) == [7, 2, 1, 8, 3]
 assert resource_gate([4,4,4,4,4,20], 12, 3) == [4, 4, 4, 4, 4]
+assert resource_gate([9,9,9,9,9,9,9,9,9,9], 10, 1) == [9, 9, 9, 9]
 ```
 
 The solution will be evaluated on the provided test cases.
@@ -237,11 +254,12 @@ Write only the function implementation. Do not include the assert statements."""
             ([1,1,1,1,1,1,1,1,1,1], 3, 0),
             ([7,2,9,1,8,3], 8, 2),
             ([4,4,4,4,4,20], 12, 3),
+            ([9,9,9,9,9,9,9,9,9,9], 10, 1),
         ],
         "test_outputs": [
-            [5,4,3,2,1], [3,3,3,3], [10,10], [1,1,1,1,1,1,1,1,1], [7,2,1,8,3], [4,4,4,4,4],
+            [5,4,3,2,1], [3,3,3,3], [10,10], [1,1,1,1,1,1,1,1,1], [7,2,1,8,3], [4,4,4,4,4], [9,9,9,9],
         ],
-        "hidden_test":  ([6,5,4,3,9,2,7], 9, 1, [6,4,3,2,7]),
+        "hidden_test":  ([8,8,8,8,8,8,8,2], 9, 1, [8,8,8,2]),
         "func_name":    "resource_gate",
     },
     {
