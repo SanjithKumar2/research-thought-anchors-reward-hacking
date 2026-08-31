@@ -23,10 +23,17 @@ def extract_code(response: str) -> str:
 
 
 def extract_think_block(response: str) -> str:
-    """Extract just the <think>...</think> content."""
+    """Extract just the <think>...</think> content.
+
+    Some chat templates (e.g. R1-Distill-Qwen) append the opening <think>
+    tag to the *prompt* rather than having the model generate it, so the
+    completion only ever contains the closing tag. Handle both cases.
+    """
     match = re.search(r'<think>(.*?)</think>', response, re.DOTALL)
     if match:
         return match.group(1).strip()
+    if '</think>' in response:
+        return response.split('</think>', 1)[0].strip()
     return ""
 
 

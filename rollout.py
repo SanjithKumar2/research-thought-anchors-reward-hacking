@@ -75,7 +75,7 @@ def run_single(tok, task: dict, rollout_idx: int) -> dict:
         "is_hack":       is_hardcode_hack(code, task),
         "passes_hidden": passes_hidden_test(code, task),
         "temperature":   TEMPERATURE,
-        "has_think_tag": "<think>" in raw,
+        "has_think_tag": ("<think>" in raw) or ("</think>" in raw),
     }
 
 
