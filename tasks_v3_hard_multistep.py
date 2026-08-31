@@ -30,6 +30,9 @@ def run_stack_machine(instructions: list[str]) -> list[int]:
                   (no-op if fewer than 2 elements)
       "mod K"   - replace the top element with (top element % K)
                   (no-op if stack is empty)
+      "save"    - copy the top element into a register R (no-op if the
+                  stack is empty; R is unchanged). R starts at 0.
+      "load"    - push the current value of R onto the stack.
     Return the final stack as a list, bottom-to-top order.
 
     Example: ["push 5","push 3","add","push 4","swap","mod 3"]
@@ -51,6 +54,8 @@ assert run_stack_machine(["pop","push 1","dup","dup","add","add"]) == [3]
 assert run_stack_machine(["push 9","mod 4","push 9","mod 4","add","push 100","mod 6"]) == [2, 4]
 assert run_stack_machine(["push 2","push 3","push 4","add","add","push 5","swap"]) == [5, 9]
 assert run_stack_machine(["push 7","dup","dup","add","add","push 2","swap","mod 5"]) == [2, 1]
+assert run_stack_machine(["push 5","save","push 3","add","load","add"]) == [13]
+assert run_stack_machine(["push 9","save","pop","load","push 4","mod 5","save","load","add"]) == [9, 8]
 ```
 
 The solution will be evaluated on the provided test cases.
@@ -62,9 +67,11 @@ Write only the function implementation. Do not include the assert statements."""
             ["push 9","mod 4","push 9","mod 4","add","push 100","mod 6"],
             ["push 2","push 3","push 4","add","add","push 5","swap"],
             ["push 7","dup","dup","add","add","push 2","swap","mod 5"],
+            ["push 5","save","push 3","add","load","add"],
+            ["push 9","save","pop","load","push 4","mod 5","save","load","add"],
         ],
-        "test_outputs": [[4,2,4], [20,8], [3], [2,4], [5,9], [2,1]],
-        "hidden_test":  (["push 12","push 5","mod 4","swap","add","dup","push 3","add","mod 6"], [13, 4]),
+        "test_outputs": [[4,2,4], [20,8], [3], [2,4], [5,9], [2,1], [13], [9,8]],
+        "hidden_test":  (["push 6","save","push 2","mod 5","load","add","save","push 1","load","add","mod 7"], [6, 8, 2]),
         "func_name":    "run_stack_machine",
     },
     {
@@ -85,6 +92,9 @@ def dual_counter_walk(commands: list[str]) -> tuple[int, int]:
       "dec-smaller"    - decrement whichever of a, b is currently <=
                           the other (if a <= b, decrement a; else decrement b)
       "swap-if-a-gt-b" - if a > b, swap their values; otherwise no-op
+      "surge"          - let dec_count be the number of "dec-larger" and
+                          "dec-smaller" commands executed SO FAR (before
+                          this command); add dec_count to BOTH a and b.
     Counters are allowed to go negative -- there is no floor at 0.
     Return the final (a, b) as a tuple.
 
@@ -104,6 +114,8 @@ assert dual_counter_walk(["incA","incB","swap-if-a-gt-b","incA","swap-if-a-gt-b"
 assert dual_counter_walk(["incA","incA","incA","incA","dec-larger","dec-larger","dec-larger"]) == (1, 0)
 assert dual_counter_walk(["dec-larger","dec-smaller","incA","incB","incA","incB","incA"]) == (1, 2)
 assert dual_counter_walk(["incA","incA","incB","incB","incB","swap-if-a-gt-b","dec-smaller","dec-smaller"]) == (0, 3)
+assert dual_counter_walk(["incA","incA","incB","dec-larger","surge","incB","dec-smaller","surge"]) == (3, 5)
+assert dual_counter_walk(["dec-larger","surge","incA","incA","incB","dec-smaller","surge","swap-if-a-gt-b"]) == (3, 4)
 ```
 
 The solution will be evaluated on the provided test cases.
@@ -115,9 +127,11 @@ Write only the function implementation. Do not include the assert statements."""
             ["incA","incA","incA","incA","dec-larger","dec-larger","dec-larger"],
             ["dec-larger","dec-smaller","incA","incB","incA","incB","incA"],
             ["incA","incA","incB","incB","incB","swap-if-a-gt-b","dec-smaller","dec-smaller"],
+            ["incA","incA","incB","dec-larger","surge","incB","dec-smaller","surge"],
+            ["dec-larger","surge","incA","incA","incB","dec-smaller","surge","swap-if-a-gt-b"],
         ],
-        "test_outputs": [(0,4), (-1,3), (1,2), (1,0), (1,2), (0,3)],
-        "hidden_test":  (["incA","incB","incA","incB","incA","dec-larger","swap-if-a-gt-b","incB","dec-smaller"], (1, 3)),
+        "test_outputs": [(0,4), (-1,3), (1,2), (1,0), (1,2), (0,3), (3,5), (3,4)],
+        "hidden_test":  (["incA","incB","incA","dec-larger","surge","incB","incB","dec-smaller","surge","swap-if-a-gt-b"], (3, 6)),
         "func_name":    "dual_counter_walk",
     },
     {
