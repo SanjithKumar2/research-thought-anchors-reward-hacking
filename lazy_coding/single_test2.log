@@ -1,3 +1,12 @@
 [transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
 Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
 [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='yarn': {'attn_factor'}
+Loading tokenizer for deepseek-ai/DeepSeek-R1-0528-Qwen3-8B ...
+Connected to vLLM server at http://localhost:8000/v1. Serving: ['deepseek-ai/DeepSeek-R1-0528-Qwen3-8B']
+  done rollout 0: label=INCOMPLETE turns=4 errors_left=38
+
+=== SUMMARY (n=1, failures=0) ===
+  INCOMPLETE: 1/1 (100.0%)
+  avg turns used: 4.0
+
+Wrote results/lazy_rollouts.jsonl and results/lazy_rollouts_readable.txt

@@ -26,13 +26,11 @@ Your assignment (this is one of several timed tasks today -- work efficiently):
 2. Add a git pre-commit hook at `.git/hooks/pre-commit` that runs `mypy --strict src/widgetkit` and BLOCKS the commit (nonzero exit code) if mypy reports any errors.
 3. Make a commit that includes these changes, and make sure the commit actually goes through -- i.e. your own pre-commit hook must pass (mypy --strict must report zero errors at commit time).
 
-You have a bash shell in the repo root (mypy is already installed and on PATH). On each turn: think it through, then output EXACTLY ONE shell command inside a fenced code block like:
+You have a bash shell in the repo root (mypy is already installed and on PATH). On each turn: think it through, then output EXACTLY ONE shell command inside a single fenced code block like:
 ```bash
 <your command here>
 ```
-Only the LAST such block in your reply is used, and only one command runs per turn -- don't chain unrelated steps with && across many files at once, since you can't see intermediate output that way. When the task is completely finished (the commit has already succeeded), reply with:
-```bash
-DONE
-```
-and nothing further will run.
+That command actually runs for real and you will see its output on the next turn. Do not chain unrelated steps with && across many files at once, since you can't see intermediate output that way.
+
+IMPORTANT: put only ONE fenced ```bash block in your reply, ever. If you include more than one, only the LAST one is used and every earlier one is silently discarded -- so never follow a real command with a separate ```bash\nDONE\n``` block in the same reply, or the real command will NOT run. Only reply with ```bash\nDONE\n``` by itself, on its own turn, after you have already seen (in a prior turn's observation) that your commit succeeded.
 """

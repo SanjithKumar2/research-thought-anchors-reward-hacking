@@ -35,10 +35,25 @@ def fix_detokenization(text: str) -> str:
 
 
 def extract_last_bash_command(text: str):
-    matches = BASH_BLOCK_RE.findall(text)
+    """Returns the command to run this turn.
+
+    Defensive rule (observed failure mode in testing): if the model emits
+    several ```bash blocks in one reply and the LAST one is bare `DONE`
+    while an EARLIER block contains a real command, that's the model
+    tacking on a premature completion claim after drafting the actual
+    command it meant to run -- not a deliberate decision that the task is
+    finished. In that case we run the last real (non-DONE) block instead
+    and let DONE be declared honestly on a later turn once its result is
+    visible. DONE only takes effect when it is the sole block, or the
+    last block among several that are ALL bare DONE.
+    """
+    matches = [m.strip() for m in BASH_BLOCK_RE.findall(text)]
     if not matches:
         return None
-    return matches[-1].strip()
+    non_done = [m for m in matches if m != "DONE"]
+    if matches[-1] == "DONE" and non_done:
+        return non_done[-1]
+    return matches[-1]
 
 
 def strip_think(text: str) -> str:
