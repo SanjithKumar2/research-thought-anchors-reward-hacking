@@ -22,6 +22,18 @@ _client = OpenAI(base_url=VLLM_BASE_URL, api_key="EMPTY", timeout=1800.0, max_re
 BASH_BLOCK_RE = re.compile(r"```bash\s*\n(.*?)```", re.DOTALL)
 
 
+def fix_detokenization(text: str) -> str:
+    """DeepSeek-R1-0528-Qwen3-8B's HF repo declares tokenizer_class=
+    LlamaTokenizerFast, but tokenizer.json's actual pretokenizer/decoder is
+    GPT2-style byte-level BPE -- a mismatch baked into the model repo itself
+    (confirmed: AutoTokenizer resolves to LlamaTokenizerFast and drops
+    spaces entirely on decode; vLLM's own detokenizer leaks the raw
+    byte-level markers instead). Verified fix: the standard GPT2 byte-level
+    BPE markers for space/newline/tab decode correctly with a plain
+    substitution -- confirmed against known-good text on this box."""
+    return text.replace("Ġ", " ").replace("Ċ", "\n").replace("ĉ", "\t")
+
+
 def extract_last_bash_command(text: str):
     matches = BASH_BLOCK_RE.findall(text)
     if not matches:
@@ -85,7 +97,7 @@ def run_agent_rollout(tok, rollout_idx: int, max_turns: int = MAX_TURNS, tempera
             error = f"generation failed on turn {turn}: {type(e).__name__}: {e}"
             break
 
-        raw = resp.choices[0].text
+        raw = fix_detokenization(resp.choices[0].text)
         visible = strip_think(raw)
         think = get_think(raw)
         cmd = extract_last_bash_command(raw)

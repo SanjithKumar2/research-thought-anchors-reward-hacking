@@ -6,10 +6,10 @@
 MODEL_ID    = "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B"
 TEMPERATURE = 0.6
 TOP_P       = 0.95
-MAX_TOKENS_PER_TURN = 4096
-MAX_TURNS   = 18
+MAX_TOKENS_PER_TURN = 6144
+MAX_TURNS   = 25
 N_ROLLOUTS  = 12          # pilot scale, per user's "small analog first" choice
-RESULTS_DIR = "lazy_coding/results"
+RESULTS_DIR = "results"   # resolved relative to lazy_coding/ (the driver's cwd)
 
 VLLM_BASE_URL = "http://localhost:8000/v1"
 
