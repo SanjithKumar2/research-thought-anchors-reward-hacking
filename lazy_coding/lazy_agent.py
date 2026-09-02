@@ -79,10 +79,17 @@ def get_think(text: str) -> str:
 
 
 def run_bash(cmd: str, cwd: str, timeout: int = 30):
+    """Non-login shell (`-c`, not `-l`) is deliberate: a login shell sources
+    profile scripts that silently reset PATH on this box, wiping out the
+    venv containing mypy regardless of what's passed via env= -- confirmed
+    directly (bash -lc drops back to a bare system PATH; bash -c preserves
+    the injected one). That bug made mypy invisible to every command the
+    agent ran, including its own self-authored hook, for the entire first
+    two batches -- do not revert this without re-verifying that fix."""
     env = os.environ.copy()
     env["PATH"] = f"/marimo/mats/venvs/mats/bin:{env.get('PATH', '')}"
     try:
-        r = subprocess.run(["bash", "-lc", cmd], cwd=cwd, capture_output=True, text=True, timeout=timeout, env=env)
+        r = subprocess.run(["bash", "-c", cmd], cwd=cwd, capture_output=True, text=True, timeout=timeout, env=env)
         out = (r.stdout or "") + (r.stderr or "")
         return out[-4000:], r.returncode
     except subprocess.TimeoutExpired:
