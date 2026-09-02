@@ -10,27 +10,27 @@ Creating virtual environment at: venvs/mats-vllm
 Activate with: source venvs/mats-vllm/bin/activate
 === install deps: mats venv ===
 Using Python 3.13.11 environment at: venvs/mats
-Resolved 44 packages in 1.42s
-Downloading ast-serialize (1.2MiB)
-Downloading tokenizers (3.2MiB)
-Downloading openai (1.6MiB)
+Resolved 44 packages in 2.25s
 Downloading pygments (1.2MiB)
+Downloading tokenizers (3.2MiB)
 Downloading numpy (15.9MiB)
-Downloading pydantic-core (2.0MiB)
-Downloading transformers (11.5MiB)
 Downloading hf-xet (4.3MiB)
 Downloading mypy (14.5MiB)
+Downloading openai (1.6MiB)
+Downloading transformers (11.5MiB)
+Downloading pydantic-core (2.0MiB)
+Downloading ast-serialize (1.2MiB)
  Downloaded ast-serialize
  Downloaded pygments
- Downloaded openai
  Downloaded pydantic-core
+ Downloaded openai
  Downloaded tokenizers
  Downloaded hf-xet
  Downloaded transformers
  Downloaded numpy
  Downloaded mypy
-Prepared 44 packages in 1.68s
-Installed 44 packages in 190ms
+Prepared 44 packages in 1.70s
+Installed 44 packages in 200ms
  + annotated-doc==0.0.5
  + annotated-types==0.8.0
  + anyio==4.14.2
@@ -56,7 +56,7 @@ Installed 44 packages in 190ms
  + mypy==2.3.1
  + mypy-extensions==1.1.0
  + numpy==2.5.2
- + openai==3.6.0
+ + openai==3.7.0
  + packaging==26.3
  + pathspec==1.1.1
  + pydantic==2.13.5
@@ -77,61 +77,61 @@ Installed 44 packages in 190ms
  + typing-inspection==0.4.4
 === install deps: mats-vllm venv ===
 Using Python 3.13.11 environment at: venvs/mats-vllm
-Resolved 195 packages in 2.62s
-Downloading pynvvideocodec (41.2MiB)
-Downloading nvidia-nvjitlink (38.9MiB)
-Downloading nvidia-cutlass-dsl-libs-cu13 (84.0MiB)
+Resolved 195 packages in 4.40s
 Downloading nvidia-cuda-cupti (10.2MiB)
 Downloading nvidia-cusparselt-cu13 (162.3MiB)
+Downloading pynvvideocodec (41.2MiB)
 Downloading nvidia-cutlass-dsl-libs-cu12 (84.4MiB)
 Downloading nvidia-cufile (1.2MiB)
+Downloading nvidia-nvjitlink (38.9MiB)
+Downloading sympy (6.0MiB)
+Downloading tokenspeed-triton (83.2MiB)
+Downloading opencv-python-headless (58.4MiB)
+Downloading mistral-common (6.2MiB)
 Downloading nvidia-cutlass-dsl-libs-base (2.7MiB)
 Downloading nvidia-cuda-nvdisasm (4.6MiB)
 Downloading nvidia-nccl-cu13 (196.4MiB)
 Downloading nvidia-cudnn-frontend (4.5MiB)
 Downloading nvidia-cuda-nvcc (42.9MiB)
+Downloading cuda-bindings (6.2MiB)
+Downloading grpcio (6.7MiB)
+Downloading torchcodec (9.0MiB)
+Downloading flashinfer-python (15.1MiB)
+Downloading pycountry (7.7MiB)
+Downloading pillow (6.6MiB)
 Downloading nccl4py (3.4MiB)
 Downloading nvidia-curand (56.8MiB)
 Downloading nvidia-cublas (403.5MiB)
 Downloading nvidia-nvvm (66.0MiB)
-Downloading nvidia-cuda-cccl (3.3MiB)
 Downloading nvidia-cufft (204.2MiB)
+Downloading nvidia-cuda-cccl (3.3MiB)
+Downloading nvidia-cutlass-dsl-libs-cu13 (84.0MiB)
 Downloading nvidia-cusparse (139.2MiB)
 Downloading nvidia-nvshmem-cu13 (57.6MiB)
 Downloading nvidia-cuda-nvrtc (86.0MiB)
 Downloading nvidia-cuda-runtime (2.1MiB)
 Downloading nvidia-cusolver (191.6MiB)
 Downloading nvidia-cudnn-cu13 (349.2MiB)
-Downloading pillow (6.6MiB)
-Downloading mistral-common (6.2MiB)
-Downloading sympy (6.0MiB)
-Downloading cuda-bindings (6.2MiB)
-Downloading z3-solver (27.9MiB)
-Downloading pycountry (7.7MiB)
-Downloading flashinfer-python (15.1MiB)
-Downloading torchcodec (9.0MiB)
-Downloading tokenspeed-triton (83.2MiB)
 Downloading numpy (15.9MiB)
+Downloading tilelang (48.2MiB)
+Downloading z3-solver (27.9MiB)
 Downloading vllm (299.9MiB)
+Downloading llvmlite (53.7MiB)
 Downloading torchvision (7.3MiB)
 Downloading xgrammar (42.8MiB)
-Downloading llvmlite (53.7MiB)
-Downloading triton (188.6MiB)
-Downloading tilelang (48.2MiB)
-Downloading opencv-python-headless (58.4MiB)
 Downloading torch (502.2MiB)
-Downloading grpcio (6.7MiB)
+Downloading triton (188.6MiB)
 Downloading cuda-core (4.8MiB)
 Downloading cryptography (4.5MiB)
 Downloading uvloop (4.2MiB)
 Downloading numba (3.6MiB)
 Downloading llguidance (2.9MiB)
- Downloaded nvidia-cufile
 Downloading openai-harmony (2.8MiB)
+ Downloaded nvidia-cufile
 Downloading apache-tvm-ffi (2.6MiB)
- Downloaded nvidia-cutlass-dsl-libs-base
  Downloaded nvidia-cuda-runtime
 Downloading outlines-core (2.2MiB)
+ Downloaded nvidia-cutlass-dsl-libs-base
 Downloading networkx (2.0MiB)
 Downloading fastsafetensors (1.8MiB)
  Downloaded nccl4py
@@ -143,51 +143,51 @@ Downloading sentencepiece (1.3MiB)
  Downloaded nvidia-cuda-cupti
 Downloading anthropic (1.2MiB)
  Downloaded fastsafetensors
+ Downloaded openai-harmony
 Downloading tiktoken (1.1MiB)
+ Downloaded aiohttp
+Downloading setuptools (1.0MiB)
+ Downloaded outlines-core
  Downloaded apache-tvm-ffi
  Downloaded llguidance
-Downloading setuptools (1.0MiB)
- Downloaded networkx
- Downloaded aiohttp
- Downloaded outlines-core
- Downloaded openai-harmony
  Downloaded torchaudio
+ Downloaded networkx
  Downloaded numba
  Downloaded sentencepiece
  Downloaded tiktoken
- Downloaded uvloop
  Downloaded setuptools
+ Downloaded uvloop
  Downloaded cryptography
  Downloaded cuda-core
- Downloaded pynvvideocodec
  Downloaded nvidia-nvjitlink
  Downloaded sympy
- Downloaded nvidia-cuda-nvcc
+ Downloaded pynvvideocodec
  Downloaded nvidia-cuda-cccl
+ Downloaded mistral-common
  Downloaded cuda-bindings
  Downloaded anthropic
- Downloaded mistral-common
- Downloaded pillow
+ Downloaded nvidia-cuda-nvcc
  Downloaded grpcio
+ Downloaded pillow
+ Downloaded nvidia-nvshmem-cu13
+ Downloaded nvidia-curand
  Downloaded torchvision
  Downloaded pycountry
- Downloaded nvidia-curand
- Downloaded nvidia-nvshmem-cu13
- Downloaded torchcodec
  Downloaded nvidia-nvvm
+ Downloaded torchcodec
  Downloaded nvidia-cutlass-dsl-libs-cu12
+ Downloaded nvidia-cusparselt-cu13
  Downloaded nvidia-cuda-nvrtc
  Downloaded nvidia-cutlass-dsl-libs-cu13
- Downloaded nvidia-cusparselt-cu13
+ Downloaded nvidia-nccl-cu13
  Downloaded nvidia-cusparse
  Downloaded numpy
- Downloaded nvidia-nccl-cu13
  Downloaded flashinfer-python
  Downloaded nvidia-cufft
  Downloaded nvidia-cusolver
  Downloaded nvidia-cublas
- Downloaded z3-solver
  Downloaded nvidia-cudnn-cu13
+ Downloaded z3-solver
  Downloaded xgrammar
  Downloaded tilelang
  Downloaded llvmlite
@@ -196,8 +196,8 @@ Downloading setuptools (1.0MiB)
  Downloaded triton
  Downloaded vllm
  Downloaded torch
-Prepared 157 packages in 44.24s
-Installed 195 packages in 1.20s
+Prepared 157 packages in 45.67s
+Installed 195 packages in 1.13s
  + agent-detector==1.1.0
  + aiohappyeyeballs==2.7.1
  + aiohttp==3.14.3
@@ -309,7 +309,7 @@ Installed 195 packages in 1.20s
  + nvidia-nvtx==13.0.85
  + nvidia-nvvm==13.3.73
  + nvtx==0.2.15
- + openai==3.6.0
+ + openai==3.7.0
  + openai-harmony==0.0.8
  + opencv-python-headless==5.0.0.93
  + opentelemetry-api==1.44.0
@@ -396,5 +396,3 @@ Installed 195 packages in 1.20s
 === launch git_sync ===
 === launch vLLM server (DeepSeek-R1-0528-Qwen3-8B) ===
 === polling for server readiness (up to 10 min) ===
-SERVER_READY after 260s
-{"object":"list","data":[{"id":"deepseek-ai/DeepSeek-R1-0528-Qwen3-8B","object":"model","created":1788286192,"owned_by":"vllm","root":"deepseek-ai/DeepSeek-R1-0528-Qwen3-8B","parent":null,"max_model_len":32768,"permission":[{"id":"modelperm-a9fbcc0551403ed3","object":"model_permission","created":1788286192,"allow_create_engine":false,"allow_sampling":true,"allow_logprobs":true,"allow_search_indices":false,"allow_view":true,"allow_fine_tuning":false,"organization":"*","group":null,"is_blocking":false}]}]}BOOTSTRAP_SCRIPT_DONE

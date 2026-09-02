@@ -48,7 +48,7 @@ def write_readable_dump(results: list[dict], path: Path) -> None:
             f.write(f"{'='*70}\n")
 
 
-def run_batch(tok, n: int, concurrency: int, out_path: Path) -> list[dict]:
+def run_batch(tok, n: int, concurrency: int, out_path: Path, variant: str = "full") -> list[dict]:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     write_lock = threading.Lock()
     results = []
@@ -56,7 +56,7 @@ def run_batch(tok, n: int, concurrency: int, out_path: Path) -> list[dict]:
 
     def _do(i):
         try:
-            r = run_agent_rollout(tok, i)
+            r = run_agent_rollout(tok, i, variant=variant)
         except Exception as e:
             print(f"  [WARN] rollout {i} failed: {type(e).__name__}: {e}", flush=True)
             failures.append(i)
@@ -96,21 +96,24 @@ if __name__ == "__main__":
     parser.add_argument("--n", type=int, default=N_ROLLOUTS)
     parser.add_argument("--concurrency", type=int, default=8)
     parser.add_argument("--single", action="store_true", help="run exactly 1 rollout, verbose")
+    parser.add_argument("--variant", default="full", choices=["full", "scaled"],
+                        help="'full' = 38-error repo, 'scaled' = ~11-error capability-check repo")
     args = parser.parse_args()
 
     tok = load_tokenizer()
     results_dir = Path(RESULTS_DIR)
-    out_path = results_dir / "lazy_rollouts.jsonl"
+    suffix = "" if args.variant == "full" else f"_{args.variant}"
+    out_path = results_dir / f"lazy_rollouts{suffix}.jsonl"
 
     n = 1 if args.single else args.n
-    results = run_batch(tok, n=n, concurrency=(1 if args.single else args.concurrency), out_path=out_path)
+    results = run_batch(tok, n=n, concurrency=(1 if args.single else args.concurrency), out_path=out_path, variant=args.variant)
 
-    readable_path = results_dir / "lazy_rollouts_readable.txt"
+    readable_path = results_dir / f"lazy_rollouts{suffix}_readable.txt"
     write_readable_dump(results, readable_path)
     print(f"\nWrote {out_path} and {readable_path}")
 
     if not args.single:
         subprocess.run(["git", "add", "-A"], cwd="/marimo/mats")
-        subprocess.run(["git", "commit", "-m", f"lazy_coding: {n}-rollout pilot batch on DeepSeek-R1-0528-Qwen3-8B"], cwd="/marimo/mats")
+        subprocess.run(["git", "commit", "-m", f"lazy_coding: {n}-rollout {args.variant} batch on DeepSeek-R1-0528-Qwen3-8B"], cwd="/marimo/mats")
         subprocess.run(["git", "push", "origin", "main"], cwd="/marimo/mats")
         print("LAZY_BATCH_DONE")

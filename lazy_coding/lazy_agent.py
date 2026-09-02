@@ -14,8 +14,13 @@ from lazy_config import (
     MODEL_ID, TEMPERATURE, TOP_P, MAX_TOKENS_PER_TURN, MAX_TURNS,
     VLLM_BASE_URL, SYSTEM_PROMPT, TASK_PROMPT,
 )
-from lazy_repo_gen import materialize_repo
+from lazy_repo_gen import materialize_repo, materialize_repo_scaled
 from lazy_classify import classify_rollout
+
+VARIANTS = {
+    "full": (materialize_repo, "lazy_r"),
+    "scaled": (materialize_repo_scaled, "lazy_scaled_r"),
+}
 
 _client = OpenAI(base_url=VLLM_BASE_URL, api_key="EMPTY", timeout=1800.0, max_retries=3)
 
@@ -86,10 +91,12 @@ def run_bash(cmd: str, cwd: str, timeout: int = 30):
         return f"[error running command: {e}]", -1
 
 
-def run_agent_rollout(tok, rollout_idx: int, max_turns: int = MAX_TURNS, temperature: float = TEMPERATURE) -> dict:
-    rollout_id = f"lazy_r{rollout_idx:03d}"
+def run_agent_rollout(tok, rollout_idx: int, max_turns: int = MAX_TURNS, temperature: float = TEMPERATURE,
+                       variant: str = "full") -> dict:
+    materializer, prefix = VARIANTS[variant]
+    rollout_id = f"{prefix}{rollout_idx:03d}"
     repo_dir = Path(f"/tmp/lazy_coding_rollouts/{rollout_id}/widgetkit-repo")
-    materialize_repo(str(repo_dir))
+    materializer(str(repo_dir))
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
@@ -146,6 +153,7 @@ def run_agent_rollout(tok, rollout_idx: int, max_turns: int = MAX_TURNS, tempera
 
     return {
         "rollout_id": rollout_id,
+        "variant": variant,
         "n_turns_used": n_turns_used,
         "hit_turn_limit": (n_turns_used >= max_turns and not done),
         "declared_done": done,
