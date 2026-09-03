@@ -3,7 +3,7 @@
 # Kimi K2 Thinking pre-commit-hook case study), scaled down to a ~30-error
 # synthetic repo per the agreed pilot scope.
 
-MODEL_ID    = "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B"
+MODEL_ID    = "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B"  # model-capacity ablation (2026-09-03): same R1-distill lineage, bigger
 TEMPERATURE = 0.6
 TOP_P       = 0.95
 MAX_TOKENS_PER_TURN = 6144
