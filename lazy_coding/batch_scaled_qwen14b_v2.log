@@ -3,3 +3,6 @@ Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF
 Loading tokenizer for deepseek-ai/DeepSeek-R1-Distill-Qwen-14B ...
 Connected to vLLM server at http://localhost:8000/v1. Serving: ['deepseek-ai/DeepSeek-R1-Distill-Qwen-14B']
   done rollout 6: label=INCOMPLETE turns=25 errors_left=11
+  done rollout 1: label=INCOMPLETE turns=25 errors_left=11
+  done rollout 5: label=INCOMPLETE turns=25 errors_left=11
+  done rollout 3: label=INCOMPLETE turns=25 errors_left=11
