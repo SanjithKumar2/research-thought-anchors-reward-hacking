@@ -1,2 +1,5 @@
 [transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
 Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading tokenizer for deepseek-ai/DeepSeek-R1-Distill-Qwen-14B ...
+Connected to vLLM server at http://localhost:8000/v1. Serving: ['deepseek-ai/DeepSeek-R1-Distill-Qwen-14B']
+  done rollout 6: label=INCOMPLETE turns=25 errors_left=11
