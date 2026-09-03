@@ -121,7 +121,7 @@ if __name__ == "__main__":
     if not args.single:
         subprocess.run(["git", "add", "-A"], cwd="/marimo/mats")
         tag_note = f" ({args.tag})" if args.tag else ""
-        commit_msg = f"lazy_coding: {n}-rollout {args.variant}{tag_note} batch on DeepSeek-R1-0528-Qwen3-8B"
+        commit_msg = f"lazy_coding: {n}-rollout {args.variant}{tag_note} batch on {MODEL_ID}"
         subprocess.run(["git", "commit", "-m", commit_msg], cwd="/marimo/mats")
         subprocess.run(["git", "push", "origin", "main"], cwd="/marimo/mats")
         print("LAZY_BATCH_DONE")
