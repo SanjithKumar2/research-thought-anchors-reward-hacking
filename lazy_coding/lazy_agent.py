@@ -157,7 +157,7 @@ def run_agent_rollout(tok, rollout_idx: int, max_turns: int = MAX_TURNS, tempera
         raw = fix_detokenization(resp.choices[0].text)
         visible = strip_think(raw)
         think = get_think(raw)
-                cmd = resolve_turn_command(raw)
+        cmd = resolve_turn_command(raw)
 
         turn_record = {"turn": turn, "think": think, "visible": visible, "command": cmd}
 
@@ -184,7 +184,7 @@ def run_agent_rollout(tok, rollout_idx: int, max_turns: int = MAX_TURNS, tempera
             messages.append({"role": "user", "content": f"Observation:\n{obs}"})
             continue
 
-if cmd.strip() == "DONE":
+        if cmd.strip() == "DONE":
             turn_record["observation"] = None
             transcript.append(turn_record)
             done = True
