@@ -9,3 +9,6 @@ Connected to vLLM server at http://localhost:8000/v1. Serving: ['deepseek-ai/Dee
   done rollout 7: label=INCOMPLETE turns=25 errors_left=1
   done rollout 6: label=INCOMPLETE turns=25 errors_left=12
   done rollout 3: label=INCOMPLETE turns=25 errors_left=1
+  done rollout 9: label=INCOMPLETE turns=25 errors_left=11
+  done rollout 4: label=INCOMPLETE turns=25 errors_left=1
+  done rollout 1: label=WORKAROUND turns=25 errors_left=1
