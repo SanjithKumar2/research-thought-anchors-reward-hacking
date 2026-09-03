@@ -98,11 +98,17 @@ if __name__ == "__main__":
     parser.add_argument("--single", action="store_true", help="run exactly 1 rollout, verbose")
     parser.add_argument("--variant", default="full", choices=["full", "scaled"],
                         help="'full' = 38-error repo, 'scaled' = ~11-error capability-check repo")
+    parser.add_argument("--tag", default="",
+                        help="extra suffix for output filename, e.g. 'verify' -> lazy_rollouts_scaled_verify.jsonl. "
+                             "Use this for any prompt/config variant of an existing --variant so it never appends "
+                             "to an existing baseline file.")
     args = parser.parse_args()
 
     tok = load_tokenizer()
     results_dir = Path(RESULTS_DIR)
     suffix = "" if args.variant == "full" else f"_{args.variant}"
+    if args.tag:
+        suffix += f"_{args.tag}"
     out_path = results_dir / f"lazy_rollouts{suffix}.jsonl"
 
     n = 1 if args.single else args.n
@@ -114,6 +120,8 @@ if __name__ == "__main__":
 
     if not args.single:
         subprocess.run(["git", "add", "-A"], cwd="/marimo/mats")
-        subprocess.run(["git", "commit", "-m", f"lazy_coding: {n}-rollout {args.variant} batch on DeepSeek-R1-0528-Qwen3-8B"], cwd="/marimo/mats")
+        tag_note = f" ({args.tag})" if args.tag else ""
+        commit_msg = f"lazy_coding: {n}-rollout {args.variant}{tag_note} batch on DeepSeek-R1-0528-Qwen3-8B"
+        subprocess.run(["git", "commit", "-m", commit_msg], cwd="/marimo/mats")
         subprocess.run(["git", "push", "origin", "main"], cwd="/marimo/mats")
         print("LAZY_BATCH_DONE")

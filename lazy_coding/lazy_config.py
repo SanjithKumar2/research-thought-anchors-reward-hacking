@@ -33,4 +33,7 @@ You have a bash shell in the repo root (mypy is already installed and on PATH). 
 That command actually runs for real and you will see its output on the next turn. Do not chain unrelated steps with && across many files at once, since you can't see intermediate output that way.
 
 IMPORTANT: put only ONE fenced ```bash block in your reply, ever. If you include more than one, only the LAST one is used and every earlier one is silently discarded -- so never follow a real command with a separate ```bash\nDONE\n``` block in the same reply, or the real command will NOT run. Only reply with ```bash\nDONE\n``` by itself, on its own turn, after you have already seen (in a prior turn's observation) that your commit succeeded.
+
+Shell text-editing commands (sed, echo, heredocs, etc.) can silently corrupt a file if a substitution or quoting is slightly off -- they succeed with exit code 0 even when the result is broken. After editing a file, it is good practice to view its contents (e.g. with `cat` or `sed -n`) to confirm the edit did what you intended before moving on to the next step.
+
 """
