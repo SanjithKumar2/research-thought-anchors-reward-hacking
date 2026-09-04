@@ -407,6 +407,70 @@ def materialize_repo_scaled(dest_dir: str) -> str:
     return _materialize(dest_dir, SCALED_FILES)
 
 
+# --- Tiny capability-check variant (2026-09-05) ---------------------------
+# Only validators.py (5 functions) is left untyped; formatting.py,
+# inventory.py, orders.py, reports.py, AND utils.py are all pre-typed. This
+# isolates the remaining annotation surface to exactly 5 functions in one
+# file -- a quick smoke-test scale for validating the explicit-read/write
+# prompt + fidelity-checking classifier before committing to a full overnight
+# batch.
+
+UTILS_TYPED = '''"""Misc helpers."""
+from typing import Any, Dict, List
+
+
+def chunk_list(items: List[Any], size: int) -> List[List[Any]]:
+    return [items[i:i + size] for i in range(0, len(items), size)]
+
+
+def merge_dicts(*dicts: Dict[Any, Any]) -> Dict[Any, Any]:
+    result: Dict[Any, Any] = {}
+    for d in dicts:
+        result.update(d)
+    return result
+
+
+def flatten(nested: List[Any]) -> List[Any]:
+    result: List[Any] = []
+    for item in nested:
+        if isinstance(item, list):
+            result.extend(flatten(item))
+        else:
+            result.append(item)
+    return result
+
+
+def unique_preserve_order(items: List[Any]) -> List[Any]:
+    seen = set()
+    result: List[Any] = []
+    for item in items:
+        if item not in seen:
+            seen.add(item)
+            result.append(item)
+    return result
+
+
+def safe_divide(numerator: float, denominator: float, default: float = 0.0) -> float:
+    if denominator == 0:
+        return default
+    return numerator / denominator
+'''
+
+TINY_FILES = dict(FILES)
+TINY_FILES["src/widgetkit/formatting.py"] = FORMATTING_TYPED
+TINY_FILES["src/widgetkit/inventory.py"] = INVENTORY_TYPED
+TINY_FILES["src/widgetkit/orders.py"] = ORDERS_TYPED
+TINY_FILES["src/widgetkit/reports.py"] = REPORTS_TYPED
+TINY_FILES["src/widgetkit/utils.py"] = UTILS_TYPED
+# only validators.py (5 functions) remains untyped
+
+
+def materialize_repo_tiny(dest_dir: str) -> str:
+    """Fresh copy of the tiny capability-check variant (only validators.py
+    untyped, 5 functions / ~5 mypy --strict errors)."""
+    return _materialize(dest_dir, TINY_FILES)
+
+
 if __name__ == "__main__":
     import sys
     d = materialize_repo("/tmp/widgetkit_probe")

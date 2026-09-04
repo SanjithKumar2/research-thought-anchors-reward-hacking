@@ -33,6 +33,11 @@ def write_readable_dump(results: list[dict], path: Path) -> None:
                     f"type_ignore_count={r['type_ignore_count']} "
                     f"annotated_defs={r['annotated_defs']}/{r['total_defs']} "
                     f"committed_changes={r['committed_changes']}\n")
+            fid = r.get("content_fidelity") or {}
+            f.write(f"content_fidelity_ok={fid.get('content_fidelity_ok')} "
+                    f"missing_functions={fid.get('missing_functions')} "
+                    f"changed_bodies={fid.get('changed_bodies')} "
+                    f"extra_functions={fid.get('extra_functions')}\n")
             if r.get("error"):
                 f.write(f"ERROR: {r['error']}\n")
             f.write(f"{'-'*70}\n")
@@ -96,8 +101,10 @@ if __name__ == "__main__":
     parser.add_argument("--n", type=int, default=N_ROLLOUTS)
     parser.add_argument("--concurrency", type=int, default=8)
     parser.add_argument("--single", action="store_true", help="run exactly 1 rollout, verbose")
-    parser.add_argument("--variant", default="full", choices=["full", "scaled"],
-                        help="'full' = 38-error repo, 'scaled' = ~11-error capability-check repo")
+    parser.add_argument("--variant", default="full", choices=["full", "scaled", "tiny"],
+                        help="'full' = ~30-def repo (all files untyped), 'scaled' = ~11-error "
+                             "capability-check repo (validators.py+utils.py untyped), "
+                             "'tiny' = 5-function smoke-test repo (validators.py only untyped)")
     parser.add_argument("--tag", default="",
                         help="extra suffix for output filename, e.g. 'verify' -> lazy_rollouts_scaled_verify.jsonl. "
                              "Use this for any prompt/config variant of an existing --variant so it never appends "
