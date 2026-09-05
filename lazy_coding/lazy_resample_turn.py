@@ -139,7 +139,10 @@ def resample_turn(record: dict, freeze_turn: int, n_samples: int, tok, tmp_root:
         raw = fix_detokenization(resp.choices[0].text)
         visible = strip_think(raw)
         think = get_think(raw)
-        cmd = resolve_turn_command(raw)
+        # resolve on `visible`, not `raw` -- see lazy_agent.py's matching fix
+        # (Session 8): <think>-embedded example bash blocks were wrongly
+        # counted as competing commands.
+        cmd = resolve_turn_command(visible)
         tag = tag_command(cmd)
 
         entry = {"sample_idx": i, "think": think, "visible": visible, "command": cmd, "tag": tag}
@@ -150,7 +153,7 @@ def resample_turn(record: dict, freeze_turn: int, n_samples: int, tok, tmp_root:
             entry["exit_code"] = rc
             # Ground-truth snapshot classification: what would this rollout
             # be classified as if it stopped right here, one turn later?
-            entry["post_turn_classification"] = classify_rollout(str(sample_dir))
+            entry["post_turn_classification"] = classify_rollout(str(sample_dir), record["variant"])
 
         samples.append(entry)
         shutil.rmtree(sample_dir, ignore_errors=True)

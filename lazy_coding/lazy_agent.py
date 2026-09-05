@@ -158,7 +158,18 @@ def run_agent_rollout(tok, rollout_idx: int, max_turns: int = MAX_TURNS, tempera
         raw = fix_detokenization(resp.choices[0].text)
         visible = strip_think(raw)
         think = get_think(raw)
-        cmd = resolve_turn_command(raw)
+                # IMPORTANT: resolve on `visible`, not `raw`. The model routinely drafts
+        # multiple candidate/example bash blocks while reasoning inside
+        # <think> (trying variants, showing what a hook script would look like)
+        # before settling on ONE clean command in its actual answer -- scanning
+        # the full raw text (Session 6-8 behavior) treated those scratch drafts
+        # as real competing commands and wrongly triggered __MULTI__ on turns
+        # where the visible answer was a single, correct command the whole
+        # time. Confirmed directly: a Session 8 tiny-variant rollout had 6/7
+        # non-DONE turns each carry exactly one visible block (touch, the hook
+        # heredoc, a sed edit, ...) but got rejected solely because of extra
+        # blocks embedded in <think>.
+        cmd = resolve_turn_command(visible)
 
         turn_record = {"turn": turn, "think": think, "visible": visible, "command": cmd}
 
@@ -173,7 +184,7 @@ def run_agent_rollout(tok, rollout_idx: int, max_turns: int = MAX_TURNS, tempera
             continue
 
         if cmd == "__MULTI__":
-            n_blocks = len([b for b in extract_bash_blocks(raw) if b != "DONE"])
+            n_blocks = len([b for b in extract_bash_blocks(visible) if b != "DONE"])
             obs = (f"[Your last reply contained {n_blocks} separate ```bash command blocks. "
                    "Only ONE command per turn is allowed. NONE of them were executed this turn -- "
                    "nothing you wrote actually ran, so do not assume any of it happened. Put "
