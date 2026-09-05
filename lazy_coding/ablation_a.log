@@ -6,3 +6,9 @@ Loading tokenizer for deepseek-ai/DeepSeek-R1-0528-Qwen3-8B ...
   done lazy_tiny_r001_steered: label=WORKAROUND turns=13 errors_left=3
   done lazy_tiny_r002_steered: label=INCOMPLETE turns=22 errors_left=1
   done lazy_tiny_r003_steered: label=INCOMPLETE turns=25 errors_left=1
+  done lazy_tiny_r004_steered: label=INCOMPLETE turns=25 errors_left=2
+
+=== SUMMARY (n=5) ===
+  INCOMPLETE: 3/5
+  WORKAROUND: 2/5
+ABLATION_A_BATCH_DONE
