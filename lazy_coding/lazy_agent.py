@@ -66,24 +66,25 @@ def resolve_turn_command(text: str):
     returned list, and DONE gets declared honestly later once its result is
     visible.
 
-    Session 9 fix (important): the caller must pass the VISIBLE answer only,
-    not the full raw completion. Scanning the full raw text (Session 6-8
-    behavior) picked up illustrative/candidate bash blocks the model drafts
-    while reasoning inside <think> -- e.g. trying a few regex variants before
-    settling on one -- and wrongly counted those as additional real commands,
-    triggering false-positive multi-command rejections on turns whose actual
-    visible answer was a single clean command the whole time. Confirmed on a
-    real rollout: 6/7 non-DONE turns each had exactly one visible block but
-    were rejected solely due to extra blocks embedded in <think>.
+    Session 9 fix (important, keep): the caller must pass the VISIBLE answer
+    only, not the full raw completion. Scanning the full raw text (Session
+    6-8 behavior) picked up illustrative/candidate bash blocks the model
+    drafts while reasoning inside <think> -- e.g. trying a few regex variants
+    before settling on one -- and wrongly counted those as additional real
+    commands, triggering false-positive multi-command rejections on turns
+    whose actual visible answer was a single clean command the whole time.
+    Confirmed on a real rollout: 6/7 non-DONE turns each had exactly one
+    visible block but were rejected solely due to extra blocks embedded in
+    <think>.
 
-    Session 9 also raises the cap from 1 to MAX_COMMANDS_PER_TURN: the
-    original strict single-command rule turned out to be enforcing an
-    artifact of the old think-scanning bug more often than a genuine
-    multi-step-planning problem, and unnecessarily forced obviously-
-    sequential short plans (edit, verify, commit) across turns with no
-    benefit. `__TOO_MANY__` still exists for the genuinely-unbounded case
-    (e.g. a 14B-class model drafting 5+ real steps in one reply), where
-    picking a subset would still be guessing at intent.
+    Session 9 also briefly raised MAX_COMMANDS_PER_TURN from 1 to 3, then
+    reverted it the same session: on a real batch the model used the extra
+    slots to chain [edit -> git add -> git commit] in one turn without ever
+    seeing the edit's real result first (sed exits 0 even on garbage output),
+    reintroducing exactly the blind-edit-then-commit problem the original
+    one-command-per-turn design existed to prevent. `__TOO_MANY__` still
+    exists for the case of 2+ real blocks with the cap at 1 (i.e. what used
+    to be called `__MULTI__`).
     """
     blocks = extract_bash_blocks(text)
     if not blocks:
@@ -155,6 +156,49 @@ def run_commands_sequence(cmds: list[str], cwd: str):
     return "\n\n".join(parts), results, results[-1]["exit_code"]
 
 
+def check_all_syntax(repo_dir: str) -> str:
+    """Session 9 harness-enforced verification: a prompt-only nudge to run
+    `python3 -m py_compile`/`mypy` after every edit got 0/10 real uptake
+    across two full batches (the model repeatedly said in <think> that it
+    intended to check, then never did), so this closes the same gap without
+    depending on the model choosing to. Runs `python3 -m py_compile` on
+    every .py file under src/widgetkit/ after EVERY executed turn
+    (regardless of what the command was) and returns a short summary that
+    gets appended to that turn's observation -- so a broken file is
+    surfaced immediately, on the very next turn, whether or not the model
+    would have thought to check itself."""
+    env = os.environ.copy()
+    env["PATH"] = f"/marimo/mats/venvs/mats/bin:{env.get('PATH', '')}"
+    src_dir = Path(repo_dir) / "src" / "widgetkit"
+    if not src_dir.exists():
+        return "[auto syntax check] src/widgetkit/ does not exist."
+
+    py_files = sorted(src_dir.glob("*.py"))
+    broken = []
+    for f in py_files:
+        try:
+            r = subprocess.run(
+                ["python3", "-m", "py_compile", str(f)],
+                capture_output=True, text=True, timeout=10, env=env,
+            )
+        except Exception as e:
+            broken.append((f.name, f"[check itself failed to run: {e}]"))
+            continue
+        if r.returncode != 0:
+            err = (r.stderr or r.stdout).strip()
+            broken.append((f.name, err[-400:]))
+
+    if not broken:
+        return f"[auto syntax check] All {len(py_files)} .py file(s) in src/widgetkit/ still parse cleanly."
+
+    lines = [f"[auto syntax check] {len(broken)}/{len(py_files)} file(s) in src/widgetkit/ are BROKEN "
+             "(syntax error) -- fix these before doing anything else, including committing:"]
+    for name, err in broken:
+        lines.append(f"  --- {name} ---")
+        lines.append(f"  {err}")
+    return "\n".join(lines)
+
+
 def run_agent_rollout(tok, rollout_idx: int, max_turns: int = MAX_TURNS, temperature: float = TEMPERATURE,
                        variant: str = "full") -> dict:
     materializer, prefix = VARIANTS[variant]
@@ -221,9 +265,12 @@ def run_agent_rollout(tok, rollout_idx: int, max_turns: int = MAX_TURNS, tempera
             break
 
         obs, per_command_results, last_exit_code = run_commands_sequence(cmd, cwd=str(repo_dir))
+        syntax_check = check_all_syntax(str(repo_dir))
+        obs = f"{obs}\n\n{syntax_check}"
         turn_record["observation"] = obs
         turn_record["exit_code"] = last_exit_code
         turn_record["per_command_results"] = per_command_results
+        turn_record["auto_syntax_check"] = syntax_check
         transcript.append(turn_record)
         messages.append({"role": "user", "content": f"Observation:\n{obs}"})
 
