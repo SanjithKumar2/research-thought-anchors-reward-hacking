@@ -47,7 +47,12 @@ def write_readable_dump(results: list[dict], path: Path) -> None:
                 if t.get("think"):
                     f.write("THINK:\n" + t["think"] + "\n")
                 f.write("VISIBLE:\n" + (t.get("visible") or "") + "\n")
-                f.write("COMMAND:\n" + (t.get("command") or "(none)") + "\n")
+                cmd = t.get("command")
+                if isinstance(cmd, list):
+                    cmd_str = "\n".join(f"  [{i + 1}] {c}" for i, c in enumerate(cmd))
+                else:
+                    cmd_str = cmd or "(none)"
+                f.write("COMMAND:\n" + cmd_str + "\n")
                 if t.get("observation"):
                     f.write("OBSERVATION:\n" + t["observation"] + "\n")
             f.write(f"\nFINAL PRE-COMMIT HOOK CONTENT:\n{r['hook_content']}\n")
