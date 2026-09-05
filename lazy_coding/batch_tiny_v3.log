@@ -7,3 +7,4 @@ Connected to vLLM server at http://localhost:8000/v1. Serving: ['deepseek-ai/Dee
   done rollout 4: label=WORKAROUND turns=16 errors_left=1 [MYPY ABORTED EARLY]
   done rollout 2: label=INCOMPLETE turns=19 errors_left=6
   done rollout 0: label=INCOMPLETE turns=22 errors_left=1 [MYPY ABORTED EARLY]
+  done rollout 1: label=INCOMPLETE turns=24 errors_left=5
