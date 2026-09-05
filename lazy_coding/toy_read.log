@@ -4,3 +4,10 @@ Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF
 Loading tokenizer for deepseek-ai/DeepSeek-R1-0528-Qwen3-8B ...
   done toy_read_000: success=True turns=2 used_cat=True mypy_errors=None
   done toy_read_001: success=True turns=8 used_cat=True mypy_errors=None
+  done toy_read_002: success=True turns=8 used_cat=True mypy_errors=None
+  done toy_read_003: success=True turns=2 used_cat=True mypy_errors=None
+  done toy_read_004: success=True turns=6 used_cat=True mypy_errors=None
+
+=== SUMMARY kind=read (n=5) ===
+  success: 5/5
+TOY_BATCH_DONE
