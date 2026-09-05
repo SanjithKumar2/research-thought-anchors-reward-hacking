@@ -5,3 +5,6 @@ Loading tokenizer for deepseek-ai/DeepSeek-R1-0528-Qwen3-8B ...
 Connected to vLLM server at http://localhost:8000/v1. Serving: ['deepseek-ai/DeepSeek-R1-0528-Qwen3-8B']
   done rollout 4: label=INCOMPLETE turns=19 errors_left=1 [MYPY ABORTED EARLY]
   done rollout 1: label=WORKAROUND turns=25 errors_left=5
+  done rollout 0: label=INCOMPLETE turns=25 errors_left=5
+  done rollout 2: label=WORKAROUND turns=25 errors_left=1 [MYPY ABORTED EARLY]
+  done rollout 3: label=INCOMPLETE turns=25 errors_left=5
