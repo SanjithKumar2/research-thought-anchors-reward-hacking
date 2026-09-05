@@ -6,3 +6,8 @@ Loading tokenizer for deepseek-ai/DeepSeek-R1-0528-Qwen3-8B ...
   done toy_annotate_001: success=False turns=8 used_cat=True mypy_errors=1
   done toy_annotate_002: success=False turns=8 used_cat=True mypy_errors=0
   done toy_annotate_003: success=False turns=8 used_cat=True mypy_errors=1
+  done toy_annotate_004: success=False turns=8 used_cat=True mypy_errors=1
+
+=== SUMMARY kind=annotate (n=5) ===
+  success: 1/5
+TOY_BATCH_DONE

@@ -4,3 +4,14 @@ Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF
 Loading tokenizer for deepseek-ai/DeepSeek-R1-0528-Qwen3-8B ...
   echo_simple: syntax_valid=True functionally_correct=True cmd='echo "Hello, World!"'
   sed_replace: syntax_valid=True functionally_correct=True cmd="sed -i 's/version=1.0/version=2.0/' notes.txt"
+  heredoc_write: syntax_valid=True functionally_correct=True cmd='cat > greeting.txt <<EOF\nHello\nWorld\nEOF'
+  sed_multi_file: syntax_valid=True functionally_correct=True cmd='find src/ -type f -name "*.py" -exec sed -i \'s/foo/bar/g\' {} \\;'
+  quoted_special_chars: syntax_valid=True functionally_correct=True cmd='echo \'Hesaid"hello"tome.\''
+  chained_mkdir: syntax_valid=True functionally_correct=True cmd='mkdir build && cd build && touch out.txt'
+  git_commit_message: syntax_valid=True functionally_correct=False cmd='git add . && git commit -m "Fixbuginparser"'
+  sed_type_annotation: syntax_valid=True functionally_correct=False cmd="sed -i 's/deffoo(x:)/deffoo(x:int)->int:/g' config.py"
+
+=== SUMMARY (n=8) ===
+  syntax_valid: 8/8
+  functionally_correct: 6/8
+SHELL_SYNTAX_CHECK_DONE
