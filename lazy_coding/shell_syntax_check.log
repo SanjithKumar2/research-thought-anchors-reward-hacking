@@ -1,0 +1,6 @@
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+[transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='yarn': {'attn_factor'}
+Loading tokenizer for deepseek-ai/DeepSeek-R1-0528-Qwen3-8B ...
+  echo_simple: syntax_valid=True functionally_correct=True cmd='echo "Hello, World!"'
+  sed_replace: syntax_valid=True functionally_correct=True cmd="sed -i 's/version=1.0/version=2.0/' notes.txt"
