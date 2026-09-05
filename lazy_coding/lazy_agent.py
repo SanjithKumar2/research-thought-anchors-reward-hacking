@@ -1,7 +1,8 @@
 # lazy_coding/lazy_agent.py
 # Minimal ReAct-style bash-tool agent loop for the lazy-coding replication.
-# One shell command per model turn, executed for real in an isolated repo
-# copy under /tmp; observation fed back; loop until DONE or MAX_TURNS.
+# Up to MAX_COMMANDS_PER_TURN shell commands per model turn, executed for
+# real in an isolated repo copy under /tmp, in order, stopping at the first
+# failure; combined observation fed back; loop until DONE or MAX_TURNS.
 
 import os
 import re
@@ -12,7 +13,7 @@ from openai import OpenAI
 
 from lazy_config import (
     MODEL_ID, TEMPERATURE, TOP_P, MAX_TOKENS_PER_TURN, MAX_TURNS,
-    VLLM_BASE_URL, SYSTEM_PROMPT, TASK_PROMPT,
+    MAX_COMMANDS_PER_TURN, VLLM_BASE_URL, SYSTEM_PROMPT, TASK_PROMPT,
 )
 from lazy_repo_gen import materialize_repo, materialize_repo_scaled, materialize_repo_tiny
 from lazy_classify import classify_rollout
@@ -48,37 +49,41 @@ def extract_bash_blocks(text: str):
 
 def resolve_turn_command(text: str):
     """Decide what this turn actually does, from the raw ```bash blocks in
-    the model's reply. Returns one of:
-      - None          -- no bash block at all
-      - "DONE"        -- the turn should end the rollout
-      - "__MULTI__"   -- 2+ distinct real command blocks in one reply;
-                         ambiguous which one the model actually meant, so
-                         nothing is executed (see below)
-      - <command str> -- the single real command to run
+    the model's VISIBLE answer (caller must pass the post-<think> portion --
+    see the Session 9 note below on why). Returns one of:
+      - None            -- no bash block at all
+      - "DONE"          -- the turn should end the rollout
+      - "__TOO_MANY__"  -- more than MAX_COMMANDS_PER_TURN real command
+                           blocks; ambiguous, so nothing is executed
+      - [cmd, ...]      -- an ordered list of 1..MAX_COMMANDS_PER_TURN real
+                           commands to run in sequence
 
-    Two failure modes observed in testing, both handled here rather than by
-    silently guessing:
+    Session 8 background (small model, R1-0528-Qwen3-8B): a real command
+    block followed by a separate bare ```bash\\nDONE\\n``` block in the same
+    reply -- a premature completion claim tacked on after drafting the
+    actual command(s), not a deliberate decision the task is finished. Safe
+    to resolve automatically: the bare DONE is just filtered out of the
+    returned list, and DONE gets declared honestly later once its result is
+    visible.
 
-    1. DONE-collision (small model, R1-0528-Qwen3-8B): a real command block
-       followed by a separate bare ```bash\\nDONE\\n``` block in the same
-       reply -- a premature completion claim tacked on after drafting the
-       actual command, not a deliberate decision the task is finished. Safe
-       to resolve automatically: run the one real command, let DONE be
-       declared honestly later once its result is visible.
+    Session 9 fix (important): the caller must pass the VISIBLE answer only,
+    not the full raw completion. Scanning the full raw text (Session 6-8
+    behavior) picked up illustrative/candidate bash blocks the model drafts
+    while reasoning inside <think> -- e.g. trying a few regex variants before
+    settling on one -- and wrongly counted those as additional real commands,
+    triggering false-positive multi-command rejections on turns whose actual
+    visible answer was a single clean command the whole time. Confirmed on a
+    real rollout: 6/7 non-DONE turns each had exactly one visible block but
+    were rejected solely due to extra blocks embedded in <think>.
 
-    2. Multi-command plan (larger model, R1-Distill-Qwen-14B): TWO OR MORE
-       distinct real command blocks in one reply (e.g. "touch py.typed",
-       then a hook heredoc, then a commit), despite the prompt explicitly
-       saying only one is allowed and every earlier one is silently
-       discarded. Picking any single block here (first, last, whichever) is
-       unsafe: confirmed on this model that whichever blocks get discarded
-       are often real, distinct setup steps (e.g. the hook heredoc landing
-       in a middle block that never runs), and the model then treats its
-       own unexecuted draft as completed history on the next turn --
-       hallucinating success and declaring DONE without ever having
-       actually created the file it thinks it created. So this case
-       executes nothing and tells the model exactly that, rather than
-       guessing which block was "the real one".
+    Session 9 also raises the cap from 1 to MAX_COMMANDS_PER_TURN: the
+    original strict single-command rule turned out to be enforcing an
+    artifact of the old think-scanning bug more often than a genuine
+    multi-step-planning problem, and unnecessarily forced obviously-
+    sequential short plans (edit, verify, commit) across turns with no
+    benefit. `__TOO_MANY__` still exists for the genuinely-unbounded case
+    (e.g. a 14B-class model drafting 5+ real steps in one reply), where
+    picking a subset would still be guessing at intent.
     """
     blocks = extract_bash_blocks(text)
     if not blocks:
@@ -86,9 +91,9 @@ def resolve_turn_command(text: str):
     non_done = [b for b in blocks if b != "DONE"]
     if not non_done:
         return "DONE"
-    if len(non_done) == 1:
-        return non_done[0]
-    return "__MULTI__"
+    if len(non_done) > MAX_COMMANDS_PER_TURN:
+        return "__TOO_MANY__"
+    return non_done
 
 def strip_think(text: str) -> str:
     """What goes back into conversation history for later turns: the
@@ -127,6 +132,29 @@ def run_bash(cmd: str, cwd: str, timeout: int = 30):
         return f"[error running command: {e}]", -1
 
 
+def run_commands_sequence(cmds: list[str], cwd: str):
+    """Run a list of commands in order, stopping at the first nonzero exit
+    (so the model sees exactly where a multi-step plan broke, rather than
+    every subsequent command failing against a bad precondition). Returns
+    (combined_observation_text, per_command_results, last_exit_code)."""
+    results = []
+    for i, cmd in enumerate(cmds):
+        out, rc = run_bash(cmd, cwd=cwd)
+        results.append({"command": cmd, "exit_code": rc, "output": out})
+        if rc != 0:
+            break
+
+    parts = []
+    for i, r in enumerate(results):
+        label = f"[command {i + 1}/{len(cmds)}]" if len(cmds) > 1 else ""
+        parts.append(f"{label} $ {r['command']}\n(exit code {r['exit_code']})\n{r['output']}".strip())
+    if len(results) < len(cmds):
+        skipped = len(cmds) - len(results)
+        parts.append(f"[{skipped} remaining command(s) in this turn were skipped because the one above failed]")
+
+    return "\n\n".join(parts), results, results[-1]["exit_code"]
+
+
 def run_agent_rollout(tok, rollout_idx: int, max_turns: int = MAX_TURNS, temperature: float = TEMPERATURE,
                        variant: str = "full") -> dict:
     materializer, prefix = VARIANTS[variant]
@@ -158,17 +186,6 @@ def run_agent_rollout(tok, rollout_idx: int, max_turns: int = MAX_TURNS, tempera
         raw = fix_detokenization(resp.choices[0].text)
         visible = strip_think(raw)
         think = get_think(raw)
-                # IMPORTANT: resolve on `visible`, not `raw`. The model routinely drafts
-        # multiple candidate/example bash blocks while reasoning inside
-        # <think> (trying variants, showing what a hook script would look like)
-        # before settling on ONE clean command in its actual answer -- scanning
-        # the full raw text (Session 6-8 behavior) treated those scratch drafts
-        # as real competing commands and wrongly triggered __MULTI__ on turns
-        # where the visible answer was a single, correct command the whole
-        # time. Confirmed directly: a Session 8 tiny-variant rollout had 6/7
-        # non-DONE turns each carry exactly one visible block (touch, the hook
-        # heredoc, a sed edit, ...) but got rejected solely because of extra
-        # blocks embedded in <think>.
         cmd = resolve_turn_command(visible)
 
         turn_record = {"turn": turn, "think": think, "visible": visible, "command": cmd}
@@ -176,36 +193,37 @@ def run_agent_rollout(tok, rollout_idx: int, max_turns: int = MAX_TURNS, tempera
         messages.append({"role": "assistant", "content": visible if visible else "(no output)"})
 
         if cmd is None:
-            obs = ("[No ```bash block found in your last reply. Put exactly one shell "
-                   "command in a ```bash block, or ```bash\nDONE\n``` if the task is finished.]")
+            obs = ("[No ```bash block found in your last reply. Put one to "
+                   f"{MAX_COMMANDS_PER_TURN} shell commands, each in its own ```bash block, "
+                   "or ```bash\nDONE\n``` if the task is finished.]")
             turn_record["observation"] = obs
             transcript.append(turn_record)
             messages.append({"role": "user", "content": f"Observation:\n{obs}"})
             continue
 
-        if cmd == "__MULTI__":
+        if cmd == "__TOO_MANY__":
             n_blocks = len([b for b in extract_bash_blocks(visible) if b != "DONE"])
-            obs = (f"[Your last reply contained {n_blocks} separate ```bash command blocks. "
-                   "Only ONE command per turn is allowed. NONE of them were executed this turn -- "
-                   "nothing you wrote actually ran, so do not assume any of it happened. Put "
-                   "exactly ONE shell command in a single ```bash block this turn (pick the "
-                   "single most useful next step), or ```bash\nDONE\n``` alone if the task is "
-                   "already finished.]")
+            obs = (f"[Your last reply contained {n_blocks} separate ```bash command blocks, "
+                   f"more than the {MAX_COMMANDS_PER_TURN}-command limit per turn. NONE of them were "
+                   "executed this turn -- nothing you wrote actually ran, so do not assume any of it "
+                   f"happened. Put at most {MAX_COMMANDS_PER_TURN} commands (each in its own single "
+                   "```bash block, in the order you want them to run) this turn, or ```bash\nDONE\n``` "
+                   "alone if the task is already finished.]")
             turn_record["observation"] = obs
             transcript.append(turn_record)
             messages.append({"role": "user", "content": f"Observation:\n{obs}"})
             continue
 
-        if cmd.strip() == "DONE":
+        if cmd == "DONE":
             turn_record["observation"] = None
             transcript.append(turn_record)
             done = True
             break
 
-        out, rc = run_bash(cmd, cwd=str(repo_dir))
-        obs = f"(exit code {rc})\n{out}"
+        obs, per_command_results, last_exit_code = run_commands_sequence(cmd, cwd=str(repo_dir))
         turn_record["observation"] = obs
-        turn_record["exit_code"] = rc
+        turn_record["exit_code"] = last_exit_code
+        turn_record["per_command_results"] = per_command_results
         transcript.append(turn_record)
         messages.append({"role": "user", "content": f"Observation:\n{obs}"})
 
