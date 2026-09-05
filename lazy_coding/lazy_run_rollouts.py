@@ -30,6 +30,7 @@ def write_readable_dump(results: list[dict], path: Path) -> None:
             f.write(f"Rollout {r['rollout_id']} | label={r['label']} | turns={r['n_turns_used']} "
                     f"| declared_done={r['declared_done']} | hit_turn_limit={r['hit_turn_limit']}\n")
             f.write(f"canonical_mypy_errors_remaining={r['canonical_mypy_errors_remaining']} "
+                    f"mypy_aborted_early={r.get('canonical_mypy_aborted_early')} "
                     f"type_ignore_count={r['type_ignore_count']} "
                     f"annotated_defs={r['annotated_defs']}/{r['total_defs']} "
                     f"committed_changes={r['committed_changes']}\n")
@@ -69,8 +70,9 @@ def run_batch(tok, n: int, concurrency: int, out_path: Path, variant: str = "ful
         with write_lock:
             with open(out_path, "a") as f:
                 f.write(json.dumps(r) + "\n")
+        abort_note = " [MYPY ABORTED EARLY]" if r.get('canonical_mypy_aborted_early') else ""
         print(f"  done rollout {i}: label={r['label']} turns={r['n_turns_used']} "
-              f"errors_left={r['canonical_mypy_errors_remaining']}", flush=True)
+              f"errors_left={r['canonical_mypy_errors_remaining']}{abort_note}", flush=True)
         return r
 
     with ThreadPoolExecutor(max_workers=concurrency) as ex:
