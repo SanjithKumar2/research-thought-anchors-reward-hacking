@@ -399,3 +399,5 @@ Installed 196 packages in 1.03s
 === launch git_sync ===
 === launch vLLM server (DeepSeek-R1-0528-Qwen3-8B) ===
 === polling for server readiness (up to 10 min) ===
+SERVER_READY after 275s
+{"object":"list","data":[{"id":"deepseek-ai/DeepSeek-R1-0528-Qwen3-8B","object":"model","created":1789061135,"owned_by":"vllm","root":"deepseek-ai/DeepSeek-R1-0528-Qwen3-8B","parent":null,"max_model_len":32768,"permission":[{"id":"modelperm-86c0c3b416dcb267","object":"model_permission","created":1789061135,"allow_create_engine":false,"allow_sampling":true,"allow_logprobs":true,"allow_search_indices":false,"allow_view":true,"allow_fine_tuning":false,"organization":"*","group":null,"is_blocking":false}]}]}BOOTSTRAP_SCRIPT_DONE
