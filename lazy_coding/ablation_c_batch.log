@@ -8,3 +8,4 @@ Loading tokenizer for deepseek-ai/DeepSeek-R1-0528-Qwen3-8B ...
   done lazy_tiny_r003_combined: label=INCOMPLETE turns=24 errors_left=0 reinjections=3
   done lazy_tiny_r004_combined: label=INCOMPLETE turns=25 errors_left=1 reinjections=1
   done lazy_tiny_r005_combined: label=WORKAROUND turns=25 errors_left=1 reinjections=2
+  done lazy_tiny_r006_combined: label=INCOMPLETE turns=12 errors_left=1 reinjections=1
