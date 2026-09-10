@@ -190,7 +190,17 @@ def run_agent_rollout_combined(tok, rollout_idx: int, max_turns: int = MAX_TURNS
     n_turns_used = 3
 
     # ---- turns 3.. : normal model generation, with periodic reinjection checkpoints ----
-    for turn in range(3, max_turns):
+    # A while-loop (not a fixed-step for-loop) because a firing reinjection
+    # consumes TWO real turn-budget slots (cat, then sed) for one checkpoint,
+    # not one -- each gets its own distinct turn number and its own bite out
+    # of MAX_TURNS, exactly like the initial turn-1/turn-2 demo. Using a
+    # plain `for turn in range(3, max_turns)` here would have given both
+    # scripted sub-actions the SAME turn number (cosmetic transcript bug)
+    # and let a reinjection checkpoint produce 2 real actions while only
+    # spending 1 turn of budget, silently advantaging the combined condition
+    # over the individually-tested Ablation A/B turn-budget accounting.
+    turn = 3
+    while turn < max_turns:
         n_turns_used = turn + 1
 
         if turn in REINJECT_TURNS:
@@ -207,6 +217,11 @@ def run_agent_rollout_combined(tok, rollout_idx: int, max_turns: int = MAX_TURNS
                 transcript.append(t_cat)
                 messages.append({"role": "assistant", "content": t_cat["visible"]})
                 messages.append({"role": "user", "content": f"Observation:\n{t_cat['observation']}"})
+                turn += 1
+                n_turns_used = turn + 1
+
+                if turn >= max_turns:
+                    break
 
                 think_r2 = (
                     f"Confirmed -- `{name}` still has no return annotation. I'll annotate it now, using "
@@ -228,7 +243,8 @@ def run_agent_rollout_combined(tok, rollout_idx: int, max_turns: int = MAX_TURNS
                 transcript.append(t_sed)
                 messages.append({"role": "assistant", "content": t_sed["visible"]})
                 messages.append({"role": "user", "content": f"Observation:\n{t_sed['observation']}"})
-                continue  # this turn index consumed by the reinjection, not model generation
+                turn += 1
+                continue  # both turn indices consumed by the reinjection, not model generation
 
         prompt = tok.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
         try:
@@ -250,6 +266,7 @@ def run_agent_rollout_combined(tok, rollout_idx: int, max_turns: int = MAX_TURNS
             turn_record["observation"] = obs
             transcript.append(turn_record)
             messages.append({"role": "user", "content": f"Observation:\n{obs}"})
+            turn += 1
             continue
         if cmd == "__TOO_MANY__":
             obs = ("[Your last reply contained more than one ```bash command block. NONE of "
@@ -257,6 +274,7 @@ def run_agent_rollout_combined(tok, rollout_idx: int, max_turns: int = MAX_TURNS
             turn_record["observation"] = obs
             transcript.append(turn_record)
             messages.append({"role": "user", "content": f"Observation:\n{obs}"})
+            turn += 1
             continue
         if cmd == "DONE":
             turn_record["observation"] = None
@@ -272,6 +290,7 @@ def run_agent_rollout_combined(tok, rollout_idx: int, max_turns: int = MAX_TURNS
         turn_record["per_command_results"] = per_command_results
         transcript.append(turn_record)
         messages.append({"role": "user", "content": f"Observation:\n{obs}"})
+        turn += 1
 
     classification = classify_rollout(str(repo_dir), variant)
     return {
