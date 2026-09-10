@@ -4,3 +4,4 @@ Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF
 Loading tokenizer for deepseek-ai/DeepSeek-R1-0528-Qwen3-8B ...
   done lazy_tiny_r000_combined: label=WORKAROUND turns=21 errors_left=0 reinjections=0
   done lazy_tiny_r001_combined: label=WORKAROUND turns=25 errors_left=0 reinjections=3
+  done lazy_tiny_r002_combined: label=WORKAROUND turns=25 errors_left=0 reinjections=2
