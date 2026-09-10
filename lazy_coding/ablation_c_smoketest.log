@@ -1,1 +1,6 @@
-/bin/sh: 1: venvs/mats/bin/python: not found
+Traceback (most recent call last):
+  File "/marimo/mats/lazy_coding/ablation_c_combined.py", line 44, in <module>
+    from lazy_agent import (
+    ...<3 lines>...
+    )
+ModuleNotFoundError: No module named 'lazy_agent'
