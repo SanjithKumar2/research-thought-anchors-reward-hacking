@@ -13,7 +13,11 @@ MODEL_ID    = os.environ.get("LAZY_MODEL_ID", "deepseek-ai/DeepSeek-R1-0528-Qwen
 TEMPERATURE = 0.6
 TOP_P       = 0.95
 MAX_TOKENS_PER_TURN = 6144
-MAX_TURNS   = 25
+# 2026-09-11 (Session 11 cont.): LAZY_MAX_TURNS env override, same pattern as
+# LAZY_MODEL_ID -- lets a follow-up batch test whether a harder variant's
+# INCOMPLETE outcomes were turn-budget-limited rather than capability-limited,
+# without changing the default for every other script/batch.
+MAX_TURNS   = int(os.environ.get("LAZY_MAX_TURNS", "25"))
 # 2026-09-05 (Session 9): briefly raised to 3, then reverted back to 1 the
 # same session. Raising it did fix the many false-positive multi-command
 # rejections (those were mostly a separate bug -- see the think-scan note
