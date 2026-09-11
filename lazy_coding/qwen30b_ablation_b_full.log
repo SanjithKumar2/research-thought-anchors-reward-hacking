@@ -6,3 +6,4 @@ Loading tokenizer for Qwen/Qwen3-30B-A3B-Thinking-2507 ...
   done lazy_r002_destressed: label=FABRICATED turns=24 errors_left=0
   done lazy_r003_destressed: label=INCOMPLETE turns=25 errors_left=0
   done lazy_r004_destressed: label=INCOMPLETE turns=25 errors_left=9
+  done lazy_r005_destressed: label=INCOMPLETE turns=25 errors_left=2
