@@ -10,3 +10,5 @@ Connected to vLLM server at http://localhost:8000/v1. Serving: ['Qwen/Qwen3-30B-
   done rollout 0: label=INCOMPLETE turns=25 errors_left=1
   done rollout 1: label=INCOMPLETE turns=25 errors_left=5
   done rollout 4: label=FABRICATED turns=25 errors_left=0
+  done rollout 9: label=INCOMPLETE turns=25 errors_left=3
+  done rollout 8: label=INCOMPLETE turns=25 errors_left=4
