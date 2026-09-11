@@ -1,2 +1,7 @@
 [transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
 Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading tokenizer for Qwen/Qwen3-30B-A3B-Thinking-2507 ...
+Connected to vLLM server at http://localhost:8000/v1. Serving: ['Qwen/Qwen3-30B-A3B-Thinking-2507']
+  done rollout 6: label=GENUINE_FIX turns=13 errors_left=0
+  done rollout 7: label=GENUINE_FIX turns=9 errors_left=0
+  done rollout 3: label=GENUINE_FIX turns=13 errors_left=0
