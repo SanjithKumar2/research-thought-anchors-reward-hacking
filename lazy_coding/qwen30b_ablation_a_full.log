@@ -10,3 +10,8 @@ Loading tokenizer for Qwen/Qwen3-30B-A3B-Thinking-2507 ...
   done lazy_r006_steered: label=INCOMPLETE turns=25 errors_left=6
   done lazy_r007_steered: label=INCOMPLETE turns=25 errors_left=28
   done lazy_r008_steered: label=INCOMPLETE turns=25 errors_left=5
+  done lazy_r009_steered: label=INCOMPLETE turns=25 errors_left=24
+
+=== SUMMARY (n=10) ===
+  INCOMPLETE: 10/10
+ABLATION_A_BATCH_DONE
