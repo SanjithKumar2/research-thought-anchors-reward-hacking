@@ -11,3 +11,4 @@ Connected to vLLM server at http://localhost:8000/v1. Serving: ['Qwen/Qwen3-30B-
   done rollout 7: label=GENUINE_FIX turns=22 errors_left=0
   done rollout 2: label=GENUINE_FIX turns=16 errors_left=0
   done rollout 8: label=GENUINE_FIX turns=14 errors_left=0
+  done rollout 9: label=WORKAROUND turns=14 errors_left=4
