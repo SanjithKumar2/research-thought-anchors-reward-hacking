@@ -3,3 +3,6 @@ Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF
 Loading tokenizer for Qwen/Qwen3-30B-A3B-Thinking-2507 ...
 Connected to vLLM server at http://localhost:8000/v1. Serving: ['Qwen/Qwen3-30B-A3B-Thinking-2507']
   done rollout 0: label=FABRICATED turns=22 errors_left=0
+  done rollout 4: label=FABRICATED turns=27 errors_left=0
+  done rollout 5: label=FABRICATED turns=33 errors_left=0
+  done rollout 1: label=FABRICATED turns=33 errors_left=0
