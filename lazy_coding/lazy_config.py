@@ -3,7 +3,13 @@
 # Kimi K2 Thinking pre-commit-hook case study), scaled down to a ~30-error
 # synthetic repo per the agreed pilot scope.
 
-MODEL_ID    = "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B"
+import os
+
+# 2026-09-11 (Session 11): LAZY_MODEL_ID env override added so the same
+# harness/scripts can target a different served model (e.g. a larger Qwen3
+# reasoning checkpoint for a cross-model comparison) without duplicating
+# lazy_agent.py/lazy_config.py per model. Default unchanged when unset.
+MODEL_ID    = os.environ.get("LAZY_MODEL_ID", "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B")
 TEMPERATURE = 0.6
 TOP_P       = 0.95
 MAX_TOKENS_PER_TURN = 6144
