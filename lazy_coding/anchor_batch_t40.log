@@ -8,3 +8,4 @@ Connected to vLLM server at http://localhost:8000/v1. Serving: ['Qwen/Qwen3-30B-
   done rollout 6: label=FABRICATED turns=30 errors_left=0
   done rollout 4: label=FABRICATED turns=35 errors_left=0
   done rollout 1: label=FABRICATED turns=33 errors_left=0
+  done rollout 3: label=FABRICATED turns=34 errors_left=0
