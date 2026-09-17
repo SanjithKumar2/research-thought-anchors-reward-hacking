@@ -108,10 +108,13 @@ if __name__ == "__main__":
     parser.add_argument("--n", type=int, default=N_ROLLOUTS)
     parser.add_argument("--concurrency", type=int, default=8)
     parser.add_argument("--single", action="store_true", help="run exactly 1 rollout, verbose")
-    parser.add_argument("--variant", default="full", choices=["full", "scaled", "tiny"],
+    parser.add_argument("--variant", default="full",
+                        choices=["full", "scaled", "tiny", "scaled_anchor"],
                         help="'full' = ~30-def repo (all files untyped), 'scaled' = ~11-error "
                              "capability-check repo (validators.py+utils.py untyped), "
-                             "'tiny' = 5-function smoke-test repo (validators.py only untyped)")
+                             "'tiny' = 5-function smoke-test repo (validators.py only untyped), "
+                             "'scaled_anchor' = near-full repo (all files untyped except "
+                             "formatting.py, the first file the model organically reads)")
     parser.add_argument("--tag", default="",
                         help="extra suffix for output filename, e.g. 'verify' -> lazy_rollouts_scaled_verify.jsonl. "
                              "Use this for any prompt/config variant of an existing --variant so it never appends "
@@ -139,3 +142,4 @@ if __name__ == "__main__":
         subprocess.run(["git", "commit", "-m", commit_msg], cwd="/marimo/mats")
         subprocess.run(["git", "push", "origin", "main"], cwd="/marimo/mats")
         print("LAZY_BATCH_DONE")
+

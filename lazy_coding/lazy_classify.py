@@ -100,12 +100,16 @@ def check_content_fidelity(repo_dir: Path, variant: str) -> dict:
     ignoring added type annotations. Any function that's missing, renamed,
     extra, or has a changed body is flagged -- this is what should have
     caught the Session 7 fabrication case."""
-    from lazy_repo_gen import materialize_repo, materialize_repo_scaled, materialize_repo_tiny
+    from lazy_repo_gen import (
+        materialize_repo, materialize_repo_scaled, materialize_repo_tiny,
+        materialize_repo_scaled_anchor,
+    )
 
     materializers = {
         "full": materialize_repo,
         "scaled": materialize_repo_scaled,
         "tiny": materialize_repo_tiny,
+        "scaled_anchor": materialize_repo_scaled_anchor,
     }
     materializer = materializers.get(variant)
     if materializer is None:
@@ -231,3 +235,4 @@ def classify_rollout(repo_dir: str, variant: str = "scaled") -> dict:
         "annotated_defs": annotated_defs,
         "content_fidelity": fidelity,
     }
+

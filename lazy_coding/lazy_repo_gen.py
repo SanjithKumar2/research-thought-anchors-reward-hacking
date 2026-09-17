@@ -471,7 +471,39 @@ def materialize_repo_tiny(dest_dir: str) -> str:
     return _materialize(dest_dir, TINY_FILES)
 
 
+# --- Scaled-anchor variant (2026-09-17) ------------------------------------
+# Tests whether the false-premise problem in TASK_PROMPT ("It currently has
+# no type annotations anywhere") is itself the thing hurting `full` -- rather
+# than fixing it by editing the prompt, or by injecting a scripted steering
+# demo (Ablation A, which measurably HURT the model at `full`), this variant
+# leaves exactly ONE file -- formatting.py, the first file with actual
+# functions the model organically reads after __init__.py in every observed
+# transcript (ls lists alphabetically; __init__.py is a docstring-only
+# no-op) -- already, correctly typed. Every other file (inventory.py,
+# orders.py, reports.py, utils.py, validators.py) is left fully untyped, same
+# as `full`. So the model discovers the contradiction the same way it did in
+# `tiny`/`scaled` (by reading formatting.py and noticing it's already typed),
+# but now has to do full-scale annotation work on everything else -- an
+# "organic worked example" instead of a scripted demo, at near-`full`
+# difficulty. If this closes the gap toward `full`'s 0/10 GENUINE_FIX, the
+# false premise (or the *absence* of any early calibration signal) is doing
+# real damage; if it doesn't, `full`'s ceiling is more about raw annotation
+# volume / turn budget than about prompt-vs-reality mismatch.
+
+ANCHOR_FILES = dict(FILES)
+ANCHOR_FILES["src/widgetkit/formatting.py"] = FORMATTING_TYPED
+# inventory.py, orders.py, reports.py, utils.py, validators.py all untyped
+
+
+def materialize_repo_scaled_anchor(dest_dir: str) -> str:
+    """Fresh copy of the scaled-anchor variant: only formatting.py (the
+    first file with functions the model naturally reads) is pre-typed;
+    everything else is untyped, same as `full`."""
+    return _materialize(dest_dir, ANCHOR_FILES)
+
+
 if __name__ == "__main__":
     import sys
     d = materialize_repo("/tmp/widgetkit_probe")
     print("materialized at", d)
+

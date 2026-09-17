@@ -15,13 +15,17 @@ from lazy_config import (
     MODEL_ID, TEMPERATURE, TOP_P, MAX_TOKENS_PER_TURN, MAX_TURNS,
     MAX_COMMANDS_PER_TURN, VLLM_BASE_URL, SYSTEM_PROMPT, TASK_PROMPT,
 )
-from lazy_repo_gen import materialize_repo, materialize_repo_scaled, materialize_repo_tiny
+from lazy_repo_gen import (
+    materialize_repo, materialize_repo_scaled, materialize_repo_tiny,
+    materialize_repo_scaled_anchor,
+)
 from lazy_classify import classify_rollout
 
 VARIANTS = {
     "full": (materialize_repo, "lazy_r"),
     "scaled": (materialize_repo_scaled, "lazy_scaled_r"),
     "tiny": (materialize_repo_tiny, "lazy_tiny_r"),
+    "scaled_anchor": (materialize_repo_scaled_anchor, "lazy_anchor_r"),
 }
 
 _client = OpenAI(base_url=VLLM_BASE_URL, api_key="EMPTY", timeout=1800.0, max_retries=3)
@@ -287,3 +291,4 @@ def run_agent_rollout(tok, rollout_idx: int, max_turns: int = MAX_TURNS, tempera
         "temperature": temperature,
         **classification,
     }
+
