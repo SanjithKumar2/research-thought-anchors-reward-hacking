@@ -12,3 +12,21 @@ Connected to vLLM server at http://localhost:8000/v1. Serving: ['Qwen/Qwen3-30B-
   done rollout 5: label=INCOMPLETE turns=25 errors_left=12
   done rollout 8: label=INCOMPLETE turns=25 errors_left=10
   done rollout 9: label=INCOMPLETE turns=25 errors_left=4
+[main 908a4a0] lazy_coding: 10-rollout scaled_anchor (baseline) batch on Qwen/Qwen3-30B-A3B-Thinking-2507
+ 9 files changed, 59238 insertions(+), 68 deletions(-)
+ create mode 100644 BRIEF_FOR_CLAUDE_CODE.md
+ create mode 100644 handoff/HANDOFF_FOR_NEXT_CLAUDE.md
+ create mode 100644 lazy_coding/anchor_batch.log
+ create mode 100644 lazy_coding/anchor_smoketest.log
+ create mode 100644 lazy_coding/results/lazy_rollouts_scaled_anchor_baseline.jsonl
+ create mode 100644 lazy_coding/results/lazy_rollouts_scaled_anchor_baseline_readable.txt
+ create mode 100644 lazy_coding/results/lazy_rollouts_scaled_anchor_smoketest.jsonl
+ create mode 100644 lazy_coding/results/lazy_rollouts_scaled_anchor_smoketest_readable.txt
+fatal: could not read Username for 'https://github.com': No such device or address
+
+=== SUMMARY (n=10, failures=0) ===
+  INCOMPLETE: 10/10 (100.0%)
+  avg turns used: 25.0
+
+Wrote results/lazy_rollouts_scaled_anchor_baseline.jsonl and results/lazy_rollouts_scaled_anchor_baseline_readable.txt
+LAZY_BATCH_DONE
