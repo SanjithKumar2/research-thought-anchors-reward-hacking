@@ -12,3 +12,6 @@ Connected to vLLM server at http://localhost:8000/v1. Serving: ['Qwen/Qwen3-30B-
   done rollout 2: label=FABRICATED turns=37 errors_left=0
   done rollout 9: label=INCOMPLETE turns=37 errors_left=0
   done rollout 8: label=FABRICATED turns=32 errors_left=0
+[main 98d3fdf] lazy_coding: 10-rollout scaled_anchor (baseline_t40) batch on Qwen/Qwen3-30B-A3B-Thinking-2507
+ 4 files changed, 61485 insertions(+)
+ create mode 100644 lazy_coding/results/lazy_rollouts_scaled_anchor_baseline_t40_readable.txt
