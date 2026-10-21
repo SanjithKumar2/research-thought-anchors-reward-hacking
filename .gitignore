@@ -5,3 +5,7 @@ __pycache__/
 .venv/
 *.egg-info/
 mats_project_handoff.zip
+
+# handoff docs kept local-only (removed from repo history on purpose, see handoff Session 11/12)
+/BRIEF_FOR_CLAUDE_CODE.md
+/handoff/HANDOFF_FOR_NEXT_CLAUDE.md
