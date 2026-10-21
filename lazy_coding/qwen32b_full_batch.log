@@ -1,1 +1,4 @@
 [transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+Loading tokenizer for Qwen/Qwen3-32B ...
+Connected to vLLM server at http://localhost:8000/v1. Serving: ['Qwen/Qwen3-32B']
+  done rollout 6: label=WORKAROUND turns=5 errors_left=38
