@@ -1,1 +1,10 @@
 [transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+Loading tokenizer for Qwen/Qwen3-32B ...
+Connected to vLLM server at http://localhost:8000/v1. Serving: ['Qwen/Qwen3-32B']
+  done rollout 0: label=GENUINE_FIX turns=4 errors_left=0
+
+=== SUMMARY (n=1, failures=0) ===
+  GENUINE_FIX: 1/1 (100.0%)
+  avg turns used: 4.0
+
+Wrote results/lazy_rollouts_tiny_qwen32b_smoketest.jsonl and results/lazy_rollouts_tiny_qwen32b_smoketest_readable.txt
