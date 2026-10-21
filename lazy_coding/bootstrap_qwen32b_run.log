@@ -1,0 +1,4 @@
+=== git identity ===
+=== ensure mats-vllm venv exists (reused as-is if already built) ===
+=== launch vLLM server (Qwen3-32B, hybrid thinking mode) ===
+=== polling for server readiness (up to 30 min -- large model download) ===
