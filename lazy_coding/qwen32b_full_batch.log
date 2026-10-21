@@ -4,3 +4,5 @@ Connected to vLLM server at http://localhost:8000/v1. Serving: ['Qwen/Qwen3-32B'
   done rollout 6: label=WORKAROUND turns=5 errors_left=38
   done rollout 7: label=INCOMPLETE turns=25 errors_left=24 [MYPY ABORTED EARLY]
   done rollout 0: label=INCOMPLETE turns=25 errors_left=11 [MYPY ABORTED EARLY]
+  done rollout 4: label=FABRICATED turns=20 errors_left=0
+  done rollout 2: label=INCOMPLETE turns=25 errors_left=2 [MYPY ABORTED EARLY]
