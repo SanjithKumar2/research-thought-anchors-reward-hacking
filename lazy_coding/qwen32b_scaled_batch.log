@@ -2,3 +2,5 @@
 Loading tokenizer for Qwen/Qwen3-32B ...
 Connected to vLLM server at http://localhost:8000/v1. Serving: ['Qwen/Qwen3-32B']
   done rollout 4: label=GENUINE_FIX turns=9 errors_left=0
+  done rollout 2: label=GENUINE_FIX turns=16 errors_left=0
+  done rollout 5: label=INCOMPLETE turns=25 errors_left=3 [MYPY ABORTED EARLY]
